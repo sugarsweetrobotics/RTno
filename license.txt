@@ -1,0 +1,8 @@
+Thank you for downloading/using RTno libraries.
+
+RTno is a toolbox which connects arduino projects and RT-middlware.
+
+RTno is distributed under the Lesser GNU Public License v3 (LGPL).
+http://www.gnu.org/copyleft/lesser.html
+
+Copyright: Yuki Suga (ysuga.net) November, 10th, 2010.

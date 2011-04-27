@@ -1,0 +1,36 @@
+インストール方法
+
+RTnoは，RTnoというarduino開発環境用のライブラリと，RTnoProxyというRTnoを使ったarduinoと，RTコンポーネントの通信を可能にするファイルの組合せで動いています．
+
+
+１．arduinoをインストールする
+
+arduinoの公式サイトから，arduino_XXXX（XXXXにはバージョンが入る）をダウンロードし，展開して任意のフォルダに配置してください．僕は通常はCドライブの直下に置いて，デスクトップやスタートメニューにarduino.exeに対するショートカットを配置しています．
+
+公式サイト：http://www.arduino.cc/
+f
+
+２．OpenRTM-aistのインストール
+
+OpenRTM-aistの公式サイトから，OpenRTM-aistをインストールします．サイトのトップからダウンロードできるインストーラで，すべてインストールされます．
+
+Linuxについては説明を省きます．公式サイトを参照してください．
+
+公式サイト：http://www.openrtm.org/
+
+
+３．RTnoのインストール
+
+RTnoはarduinoを配置したディレクトリの，librariesのフォルダに置きます．僕なら，
+C:\arduino_XXXX\libraries\に置いておきます．これでarduinoを起動したときに，「sketch」＞「import libraries」から，「RTno」が見られると思います．（RTnoでは，このインポート方法は使いません）
+
+
+４．RTnoProxyのインストール
+
+RTnoProxyはソースコードからコンパイルするか，WindowsならばMSI形式のインストーラでインストールします．Linuxならばsrc.zipを展開し，makeしてください．binフォルダにあるRTnoProxyCompがRTnoProxyの実行ファイルです．
+
+
+
+@author Yuki Suga (ysuga.net)
+@url   http://www.ysuga.net/robot/rtm/RTno
+@mail ysuga@ysuga.net (don't hesitate to ask me!)

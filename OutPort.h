@@ -16,9 +16,17 @@ class OutPort : public OutPortBase
   //  void* m_pData;
 
  public:
+  OutPort(char* name, TimedBoolean& pData);
+  OutPort(char* name, TimedChar& pData);
+  OutPort(char* name, TimedOctet& pData);
+
   OutPort(char* name, TimedLong& pData);
   OutPort(char* name, TimedFloat& pData);
   OutPort(char* name, TimedDouble& pData);
+
+  OutPort(char* name, TimedBooleanSeq& pData);
+  OutPort(char* name, TimedCharSeq& pData);
+  OutPort(char* name, TimedOctetSeq& pData);
 
   OutPort(char* name, TimedLongSeq& pData);
   OutPort(char* name, TimedFloatSeq& pData);
@@ -27,7 +35,7 @@ class OutPort : public OutPortBase
   ~OutPort();
 
  public:
-  int SizeofData() {return 4;}
+  int SizeofData();
   int write();
 };
 

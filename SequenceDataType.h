@@ -16,7 +16,7 @@ class SequenceDataType {
   SequenceDataType(void** ptrptr); 
   ~SequenceDataType();
  public:
-  int SizeofData() {return 4;}
+  virtual int SizeofData() {return 0;}
   void length(int size) ;
   int length() {return len;}
   void* GetBuffer() { return *m_ptrptr; }

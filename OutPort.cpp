@@ -11,6 +11,30 @@
 #include "SendPacket.h"
 #include "ReceivePacket.h"
 
+OutPort::OutPort(char* name, TimedBoolean& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'b';
+}
+
+OutPort::OutPort(char* name, TimedChar& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'c';
+}
+
+OutPort::OutPort(char* name, TimedOctet& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'o';
+}
+
 OutPort::OutPort(char* name, TimedLong& Data) :
   OutPortBase(name)
 {
@@ -34,6 +58,31 @@ OutPort::OutPort(char* name, TimedDouble& Data) :
   m_pData = &Data;
   m_TypeCode = 'd';
 }
+
+OutPort::OutPort(char* name, TimedBooleanSeq& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'B';
+}
+
+OutPort::OutPort(char* name, TimedCharSeq& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'C';
+}
+
+OutPort::OutPort(char* name, TimedOctetSeq& Data) :
+  OutPortBase(name)
+{
+  //  m_pData = pData;
+  m_pData = &Data;
+  m_TypeCode = 'O';
+}
+
 
 OutPort::OutPort(char* name, TimedLongSeq& Data) :
   OutPortBase(name)
@@ -64,6 +113,19 @@ OutPort::~OutPort()
 
 }
 
+int OutPort::SizeofData() {
+  switch(m_TypeCode) {
+  case 'b':
+  case 'B':
+  case 'o':
+  case 'O':
+  case 'c':
+  case 'C':
+    return 1;
+  default:
+    return 4;
+  }
+}
 
 int OutPort::write()
 {

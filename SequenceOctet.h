@@ -1,24 +1,24 @@
 /*******************************************
- * SequenceFloat.h
+ * SequenceOctet.h
  * @author Yuki Suga
  * @copyright Yuki Suga (ysuga.net) Nov, 10th, 2010.
  * @license LGPLv3
  *****************************************/
 
-#ifndef SEQUENCE_FLOAT_HEADER_INCLUDED
-#define SEQUENCE_FLOAT_HEADER_INCLUDED
+#ifndef SEQUENCE_OCTET_HEADER_INCLUDED
+#define SEQUENCE_OCTET_HEADER_INCLUDED
 
-class SequenceFloat : public SequenceDataType
+class SequenceOctet : public SequenceDataType
 {
  private:
-  float* m_pData;
+  char* m_pData;
  public:
- SequenceFloat() : SequenceDataType((void**)&m_pData) {
+ SequenceOctet() : SequenceDataType((void**)&m_pData) {
 
   }
-  ~SequenceFloat(){}
+  ~SequenceOctet(){}
   int SizeofData() { return 4; }
-  float& operator[](int index) {
+  char& operator[](int index) {
     return m_pData[index];
   }
 

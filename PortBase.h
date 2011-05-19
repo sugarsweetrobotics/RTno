@@ -26,10 +26,15 @@ class PortBase {
   char GetTypeCode() {return m_TypeCode;}
 
   int isSequenceType() {
-    char typeCode = GetTypeCode();
-    if(typeCode == 'd' || typeCode == 'f' || typeCode == 'l') {
+    switch(m_TypeCode) {
+    case 'b':
+    case 'B':
+    case 'o':
+    case 'O':
+    case 'c':
+    case 'C':
       return 0;
-    } else if(typeCode == 'D' || typeCode == 'F' || typeCode == 'L') {
+    default:
       return 1;
     }
   }

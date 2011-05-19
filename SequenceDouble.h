@@ -17,6 +17,7 @@ class SequenceDouble : public SequenceDataType
 
   }
   ~SequenceDouble(){}
+  int SizeofData() { return 4; }
 
   double& operator[](int index) {
     return m_pData[index];

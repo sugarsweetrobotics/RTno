@@ -121,6 +121,7 @@ void addInPort(InPortBase& Port)
   memcpy(&(data[1]), Port.GetName(), len);
   SendPacket(ADD_INPORT, len+1, data);
   ReceivePacket(packet_buffer);
+  free(data);
 }
 
 void addOutPort(OutPortBase& Port)
@@ -131,4 +132,5 @@ void addOutPort(OutPortBase& Port)
   memcpy(&(data[1]), Port.GetName(), len);
   SendPacket(ADD_OUTPORT, len+1, data);
   ReceivePacket(packet_buffer);
+  free(data);
 }

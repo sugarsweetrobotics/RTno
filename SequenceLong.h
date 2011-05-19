@@ -17,7 +17,7 @@ class SequenceLong : public SequenceDataType
 
   }
   ~SequenceLong(){}
-
+  int SizeofData() { return 4; }
   long& operator[](int index) {
     return m_pData[index];
   }

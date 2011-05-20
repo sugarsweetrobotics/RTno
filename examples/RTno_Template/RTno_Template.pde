@@ -31,7 +31,7 @@
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
-  conf._default.baudrate = 19200;
+  conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
 

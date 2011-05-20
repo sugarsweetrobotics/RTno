@@ -9,7 +9,7 @@
  *****************************************/
 
 
-#define BAUDRATE 19200
+//#define BAUDRATE 19200
 
 #define RTC_OK 0
 #define RTC_ERROR -1
@@ -26,13 +26,13 @@ void addOutPort(OutPortBase& outPort);
 
 struct config_str {
   struct default_str {
-    int baudrate;
+    long baudrate;
   }_default;
 };
 
 struct exec_cxt_str {
 	struct periodic_str {
-		int type;
+		long type;
 	}periodic;
 };
 

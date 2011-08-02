@@ -28,11 +28,11 @@ class PortBase {
   int isSequenceType() {
     switch(m_TypeCode) {
     case 'b':
-    case 'B':
     case 'o':
-    case 'O':
     case 'c':
-    case 'C':
+    case 'l':
+    case 'f':
+    case 'd':
       return 0;
     default:
       return 1;

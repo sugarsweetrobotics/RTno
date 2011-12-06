@@ -7,7 +7,8 @@
 
 #include "Packet.h"
 #include <HardwareSerial.h>
-#include <WConstants.h>
+// #include <WConstants.h>
+#include <Arduino.h>
 
 int SendPacket(const char interface, const char data_length, const char* packet_data) {
   unsigned char sum = 0;

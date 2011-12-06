@@ -6,7 +6,8 @@
  *****************************************/
 
 #include "RTno.h"
-#include "WConstants.h"
+#include <Arduino.h>
+// #include "WConstants.h"
 #include "HardwareSerial.h"
 #include "ReceivePacket.h"
 #include "SendPacket.h"

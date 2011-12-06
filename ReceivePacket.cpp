@@ -7,7 +7,8 @@
 
 #include "ReceivePacket.h"
 #include <HardwareSerial.h>
-#include <WConstants.h>
+// #include <WConstants.h>
+#include <Arduino.h>
 
 int ReceivePacket(char* packet) {
   int counter = 0;

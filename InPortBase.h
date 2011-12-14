@@ -9,15 +9,22 @@
 #define INPORT_BASE_HEADER_INCLUDED
 
 #include "PortBase.h"
+#include "PortBuffer.h"
 
 class InPortBase : public PortBase {
- public:
+protected:
 
  public:
- InPortBase(char *name) : PortBase(name){}
 
-  //  virtual bool isNew() = 0;
-  //  virtual bool read(char* dst, int size) = 0;
+
+
+  
+ public:
+  InPortBase(char *name) : PortBase(name){
+
+  }
+  
+
 
 };
 #endif

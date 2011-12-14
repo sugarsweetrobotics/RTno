@@ -105,20 +105,18 @@ InPort::~InPort()
 {
 }
 
-
-int InPort::isNew()
-{
-  char packet_buffer[MAX_PACKET_SIZE];
-  SendPacket(INPORT_ISNEW, strlen(GetName()), GetName());
-  ReceivePacket(packet_buffer);
-  if(packet_buffer[INTERFACE] != INPORT_ISNEW) {
-    return 0;//-INVALID_PACKET_INTERFACE;
-  }
-  return packet_buffer[DATA_START_ADDR];
+int InPort::isNew() {
+  return hasNext();
 }
 
-
 int InPort::read() {
+  int len = getNextDataSize();
+  SetLength(len / SizeofData());
+  void* pBuffer = GetBuffer();
+  pop((char*)pBuffer, len);
+  return len;
+
+  /*
   char packet_buffer[MAX_PACKET_SIZE];
   SendPacket(INPORT_READ, strlen(GetName()), GetName());
   ReceivePacket(packet_buffer);
@@ -131,6 +129,7 @@ int InPort::read() {
   void *pBuffer = GetBuffer();
   memcpy(pBuffer, &(packet_buffer[DATA_START_ADDR]), len*SizeofData());
   return len;
+  */
 }
 
 

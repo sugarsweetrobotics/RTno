@@ -22,6 +22,15 @@
 #define DATA_LENGTH 1
 #define DATA_START_ADDR 2
 
+enum {
+  CREATED='C',
+  INACTIVE='I',
+  ACTIVE='A',
+  ERROR='E',
+  NONE='N',
+};
+
+
 // Protocol
 // Interface
 #define INITIALIZE 'I'
@@ -31,6 +40,12 @@
 #define ONERROR 'C'
 #define RESET 'R'
 #define GET_STATUS 'X'
+#define GET_DATA 'G'
+#define SEND_DATA 'S'
+#define GET_PROFILE 'Z'
+#define GET_CONTEXT 'B'
+#define PACKET_ERROR 'F'
+#define RECEIVE_DATA 'V'
 
 #define ADD_INPORT 'P'
 #define ADD_OUTPORT 'Q'
@@ -40,12 +55,12 @@
 
 #define RTNO_OK '@'
 #define RTNO_ERROR 'x'
-
+#define RTNO_NONE '!'
 
 #define OUTPORT_WRITE 'W'
 
 // Communication Settings
-#define PACKET_WAITING_TIME 50 // ms
+#define PACKET_WAITING_TIME 100 // ms
 #define PACKET_WAITING_DELAY 100 //us
 #define PACKET_WAITING_COUNT (PACKET_WAITING_TIME*1000/PACKET_WAITING_DELAY)
 
@@ -68,5 +83,5 @@
 #define TYPECODE_TIMED_FLOAT_SEQ 'F'
 #define TYPECODE_TIMED_DOUBLE_SEQ 'D'
 
-#define MAX_PACKET_SIZE 64
+#define MAX_PACKET_SIZE 128
 #endif

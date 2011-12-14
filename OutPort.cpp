@@ -129,14 +129,16 @@ int OutPort::SizeofData() {
 
 int OutPort::write()
 {
-  int datalen = GetLength() * SizeofData();
-  int namelen = strlen(GetName());
-  char packet_buffer[MAX_PACKET_SIZE];
-  packet_buffer[0] = namelen;
-  packet_buffer[1] = datalen;
-  memcpy(&(packet_buffer[2]), GetName(), namelen);
-  memcpy(&(packet_buffer[2 + namelen]), GetBuffer(), datalen);
-  SendPacket(OUTPORT_WRITE, 2+namelen+datalen, packet_buffer);
-  ReceivePacket(packet_buffer);
-  return PACKET_HEADER_SIZE+2+namelen+datalen;
+  //  int datalen = GetLength() * SizeofData();
+  //  int namelen = strlen(GetName());
+  //  char packet_buffer[MAX_PACKET_SIZE];
+  //  packet_buffer[0] = namelen;
+  //  packet_buffer[1] = datalen;
+  //  memcpy(&(packet_buffer[2]), GetName(), namelen);
+  //  memcpy(&(packet_buffer[2 + namelen]), GetBuffer(), datalen);
+  //  push(packet_buffer, datalen);
+  push((const char*)GetBuffer(), GetLength() * SizeofData());
+  //  SendPacket(OUTPORT_WRITE, 2+namelen+datalen, packet_buffer);
+  //  ReceivePacket(packet_buffer);
+  return GetLength();//PACKET_HEADER_SIZE+2+namelen+datalen;
 }

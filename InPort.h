@@ -36,6 +36,8 @@ class InPort : public InPortBase {
   int isNew();
   int read();
   int SizeofData();
+  
+
 
 
 };

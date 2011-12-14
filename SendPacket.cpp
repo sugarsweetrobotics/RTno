@@ -5,6 +5,7 @@
  * @license LGPLv3
  *****************************************/
 
+/*
 #include "Packet.h"
 #include <HardwareSerial.h>
 // #include <WConstants.h>
@@ -27,3 +28,4 @@ int SendPacket(const char interface, const char data_length, const char* packet_
   Serial.write((const uint8_t*)&sum, 1);
   return PACKET_HEADER_SIZE + data_length + 1;
 }
+*/

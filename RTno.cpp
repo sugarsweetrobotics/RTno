@@ -93,6 +93,8 @@ void loop() {
       _SendProfile();
     } else if(m_pPacketBuffer[INTERFACE] == GET_STATUS) {
       m_pTransport->SendPacket(GET_STATUS, 1, &m_Condition);
+    } else if(m_pPacketBuffer[INTERFACE] == GET_CONTEXT) {
+      m_pTransport->SendPacket(GET_CONTEXT, 1, (char*)&(exec_cxt.periodic.type));
     } else {
       switch (m_Condition) {
       case ERROR:

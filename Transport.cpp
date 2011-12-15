@@ -23,10 +23,6 @@ int Transport::SendPacket(const char interface, const char data_length, const ch
     sum += packet_data[i];
     m_pSerialDevice->write((const uint8_t*)packet_data+i, 1);
   }
-  //  if(data_length != 0) {
-  //n    m_pSerialDevice->write((const uint8_t*)packet_data, data_length);
-  //  }
-  //sum = 32;
   m_pSerialDevice->write((const uint8_t*)&sum, 1);
   return PACKET_HEADER_SIZE + data_length + 1;
 }

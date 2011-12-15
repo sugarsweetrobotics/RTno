@@ -8,8 +8,6 @@
 
 #include <string.h>
 #include "Packet.h"
-#include "ReceivePacket.h"
-#include "SendPacket.h"
 #include "BasicDataType.h"
 #include "InPort.h"
 

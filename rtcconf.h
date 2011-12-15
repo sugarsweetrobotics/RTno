@@ -5,14 +5,14 @@
 
 struct config_str {
   struct default_str {
-	long connection_type;
+    unsigned char connection_type;
     long baudrate;
   }_default;
 };
 
 struct exec_cxt_str {
 	struct periodic_str {
-		long type;
+		unsigned char type;
 	}periodic;
 };
 

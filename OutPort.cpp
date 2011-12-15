@@ -8,8 +8,6 @@
 #include <string.h>
 #include "BasicDataType.h"
 #include "OutPort.h"
-#include "SendPacket.h"
-#include "ReceivePacket.h"
 
 OutPort::OutPort(char* name, TimedBoolean& Data) :
   OutPortBase(name)

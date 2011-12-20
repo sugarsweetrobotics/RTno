@@ -1,24 +1,26 @@
 /**
- * RTno_Template.pde
+ * Timer1EC.pde
  * RTno is RT-middleware and arduino.
  *
- * Using RTno, arduino device can communicate any RT-components 
- *  through the RTno-proxy component which is launched in PC.
- * Connect arduino with USB, and program with RTno library.
- * You do not have to define any protocols to establish communication
- *  between arduino and PC.
+ * This sample program uses Timer1ExecutionContext.
+ * Timer1ExecutionContext is an ExecutionContext which
+ * calls onExecute function periodically when the RTno
+ * is in ACTIVE state.
  *
- * Using RTno, you must not define the function "setup" and "loop".
- * Those functions are automatically defined in the RTno libarary.
- * You, developers, must define following functions:
- *  int onInitialize(void);
- *  int onActivated(void);
- *  int onDeactivated(void);
- *  int onExecute(void);
- *  int onError(void);
- *  int onReset(void);
- * These functions are spontaneously called by the RTno-proxy
- *  RT-component which is launched in the PC.
+ * Timer1ExecutionContext uses TimerOne module to make 
+ * the periodic interruption so the period is comparably 
+ * accurate, but the PWM 9, 10 can not be used when TimerOne
+ * is used.
+ *
+ * TimerOne module is originally developed by 
+ * http://code.google.com/p/arduino-timerone/
+ *
+ * This sample program just flash the LED (13th pin)
+ * when RTno is activated.
+ *
+ * Change the exec_cxt.periodic.rate option and confirm 
+ * the flashing period changes.
+ *
  * @author Yuki Suga
  * This code is written/distributed for public-domain.
  */
@@ -28,40 +30,19 @@
 /**
  * This function is called at first.
  * conf._default.baudrate: baudrate of serial communication
- * exec_cxt.periodic.type: reserved but not used.
+ * exec_cxt.periodic.type: Timer1
  */
 void rtcconf(void) {
   conf._default.baudrate = 57600;
-  exec_cxt.periodic.type = ProxySynchronousExecutionContext;
+  conf._default.connection_type = ConnectionTypeSerial1;
+  exec_cxt.periodic.type = Timer1ExecutionContext;
+  exec_cxt.periodic.rate = 1; // [Hz]
 }
 
 
-/** 
- * Declaration Division:
- *
- * DataPort and Data Buffer should be placed here.
- *
- * available data types are as follows:
- * TimedLong
- * TimedDouble
- * TimedFloat
- * TimedLongSeq
- * TimedDoubleSeq
- * TimedFloatSeq
- *
- * Please refer following comments. If you need to use some ports,
- * uncomment the line you want to declare.
- **/
-//TimedLong in0;
-//InPort in0In("in0", in0);
-//TimedLongSeq in0;
-//InPort in0In("in0", in0);
+// No InPort and OutPort.
 
-//TimedLong out0;
-//OutPort out0Out("out0", out0);
-//TimedLongSeq out0;
-//OutPort out0Out("out0", out0);
-
+int LED = 13;
 
 //////////////////////////////////////////
 // on_initialize
@@ -75,15 +56,9 @@ void rtcconf(void) {
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  /* Data Ports are added in this section.
-  addInPort(&in0In);
-  addInPort(&in1In);
-  addOutPort(&out0Out);
-  addOutPort(&out1Out);
-  */
-  
-  // Some initialization (like port direction setting)
-  // pinMode(LED, OUTPUT);
+  // LED pin Initialization
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
   return RTC_OK; 
 }
 
@@ -122,39 +97,15 @@ int RTno::onDeactivated()
 //////////////////////////////////////////////
 int RTno::onExecute() {
 
-  /**
-   * Usage of InPort with premitive type.
-  if(in0In.isNew()) {
-    in0In.read();
-    long data = in0.data;
-  } 
-  */
-  
-  /**
-   * Usage of InPort with sequence type
-  if(in0In.isNew(&in1In)) {
-    in0In.read();
-    for(int i = 0;i < in0.data.length;i++) {
-      long data_buffer = in0.data[i];
-    }
+  static int i;
+  if(i == 0) {
+    digitalWrite(LED, HIGH);
+    i = 1;
+  } else {
+    digitalWrite(LED, LOW);
+    i = 0;
   }
-  */
-  
-  /**
-   * Usage of OutPort with primitive type.
-  out0.data = 3.14159;
-  out0Out.write();
-  */
-  
-  /**
-   * Usage of OutPort with sequence type.
-  out0.data.length(3);
-  out0.data[0] = 1.1;
-  out0.data[1] = 2.2;
-  out0.data[2] = 3.3;
-  out0Out.write();
-  */
-    
+
   return RTC_OK; 
 }
 

@@ -11,6 +11,8 @@
 
 #include "UARTTransport.h"
 #include "RTnoProfile.h"
+#include "Timer1ExecutionContext.h"
+#include "ProxySyncEC.h"
 
 using namespace RTno;
 
@@ -22,9 +24,20 @@ exec_cxt_str exec_cxt;
 #define PRIVATE static
 
 PRIVATE Transport *m_pTransport;
-PRIVATE char m_Condition = CREATED;
+// PRIVATE char m_Condition = CREATED;
 PRIVATE char m_pPacketBuffer[PACKET_BUFFER_SIZE];
 PRIVATE RTnoProfile m_Profile;
+PRIVATE RTC::ExecutionContext *m_pExecutionContext;
+
+/*
+void SetCondition(char condition) {
+  m_Condition = condition;
+}
+
+char GetCondition() {
+  return m_Condition;
+}
+*/
 
 /*
  * Send Profile Data
@@ -69,11 +82,27 @@ void setup() {
   default:
     return;
   }
-  
+
+  switch(exec_cxt.periodic.type) {
+  case Timer1ExecutionContext:
+    {
+      m_pExecutionContext = new RTC::Timer1EC(exec_cxt.periodic.rate);
+    }
+    break;
+  default:
+  case ProxySynchronousExecutionContext:
+    {
+      m_pExecutionContext = new RTC::ProxySyncEC();
+    }
+    break;
+  }
+
+
   if(onInitialize() == RTC_OK) {
-    m_Condition = INACTIVE;
+    //    m_Condition = INACTIVE;
+    m_pExecutionContext->start();  
   } else {
-    m_Condition = NONE;
+    //    m_Condition = NONE;
   }
 }
 
@@ -92,41 +121,43 @@ void loop() {
     if (m_pPacketBuffer[INTERFACE] == GET_PROFILE) {
       _SendProfile();
     } else if(m_pPacketBuffer[INTERFACE] == GET_STATUS) {
-      m_pTransport->SendPacket(GET_STATUS, 1, &m_Condition);
+      //      m_pTransport->SendPacket(GET_STATUS, 1, &m_Condition);
+      char state = m_pExecutionContext->get_component_state();
+      m_pTransport->SendPacket(GET_STATUS, 1, &state);
     } else if(m_pPacketBuffer[INTERFACE] == GET_CONTEXT) {
       m_pTransport->SendPacket(GET_CONTEXT, 1, (char*)&(exec_cxt.periodic.type));
     } else {
-      switch (m_Condition) {
-      case ERROR:
+      switch (m_pExecutionContext->get_component_state()) {
+      case RTC_STATE_ERROR:
 	_PacketHandlerOnError();
 	break;
-      case INACTIVE:
+      case RTC_STATE_INACTIVE:
 	_PacketHandlerOnInactive();
 	break;
-      case ACTIVE:
+      case RTC_STATE_ACTIVE:
 	_PacketHandlerOnActive();
 	break;
-      case NONE:
+      case RTC_STATE_NONE:
 	ret = RTNO_NONE;
 	m_pTransport->SendPacket(m_pPacketBuffer[INTERFACE], 1, &ret);
 	break;
       default: // if m_Condition is unknown...
-	m_Condition = ERROR;
+	//	m_Condition = ERROR;
+	
 	break;
       }
     }
   }
 
+  
   int numOutPort = m_Profile.getNumOutPort();
   for(int i = 0;i < numOutPort;i++) {
+    m_pExecutionContext->suspend();
     OutPort* pOutPort = m_Profile.getOutPort(i);
     if(pOutPort->hasNext()) {
       char* name = pOutPort->GetName();
       unsigned char nameLen = strlen(name);
-      
-
       unsigned char dataLen = pOutPort->getNextDataSize();
-
 
       m_pPacketBuffer[0] = nameLen;
       m_pPacketBuffer[1] = dataLen;
@@ -134,7 +165,9 @@ void loop() {
       pOutPort->pop(m_pPacketBuffer + 2 + nameLen, dataLen);
       m_pTransport->SendPacket(RECEIVE_DATA, 2 + nameLen + dataLen, m_pPacketBuffer);
     }
-
+    //    if(exec_cxt.periodic.type == Timer1ExecutionContext) {
+    m_pExecutionContext->resume();
+    //    }
   }
   
 }
@@ -195,7 +228,10 @@ PRIVATE void _SendProfile() {
  */
 PRIVATE void _PacketHandlerOnError() {
   char intface;
-  char ret = RTNO_ERROR;
+  char ret = RTNO_OK;
+  char retval = m_pExecutionContext->error();
+  if(retval < 0) ret = RTNO_ERROR;
+  /**
   if(m_pPacketBuffer[INTERFACE] == ONERROR) {
     if(exec_cxt.periodic.type == ProxySynchronousExecutionContext) {
       onError();
@@ -212,7 +248,7 @@ PRIVATE void _PacketHandlerOnError() {
       m_Condition = ERROR;
     }
 
-  }
+    }*/
   m_pTransport->SendPacket(intface, 1, &ret);
 }
 
@@ -221,7 +257,11 @@ PRIVATE void _PacketHandlerOnError() {
  * Packet Handler in Inactive State
  */
 PRIVATE void _PacketHandlerOnInactive() {
-  char ret = RTNO_ERROR;
+
+  char ret = RTNO_OK;
+  char retval = m_pExecutionContext->activate_component();
+  if(retval < 0) ret = RTNO_ERROR;
+  /*
   if(m_pPacketBuffer[INTERFACE] == ACTIVATE) {
     if(onActivated() == RTC_OK) {
       m_Condition = ACTIVE;
@@ -229,26 +269,37 @@ PRIVATE void _PacketHandlerOnInactive() {
     } else {
       m_Condition = ERROR;
     }
-    m_pTransport->SendPacket(ACTIVATE, 1, &ret);
-  }
 
+    }*/
+  m_pTransport->SendPacket(ACTIVATE, 1, &ret);
 }
 
 /**
  * Packet Handler in Active State.
  */
 PRIVATE void _PacketHandlerOnActive() {
-  char ret = RTNO_ERROR;
+  char ret = RTNO_OK;
   char intface;
+  char retval;
   switch(m_pPacketBuffer[INTERFACE]) {
   case DEACTIVATE:
+    retval = m_pExecutionContext->deactivate_component();
+    if(retval < 0) ret = RTNO_ERROR;
+    /*
+    if(exec_cxt.periodic.type == Timer1ExecutionContext) {
+      //      m_pTimer1EC->suspend();
+    }
     intface = DEACTIVATE;
     onDeactivated();
     m_Condition = INACTIVE;
     ret = RTNO_OK;
-    m_pTransport->SendPacket(intface, 1, &ret);
+    */
+    m_pTransport->SendPacket(DEACTIVATE, 1, &ret);
     break;
   case EXECUTE:
+    retval = m_pExecutionContext->execute();
+    if(retval < 0) ret = RTNO_ERROR;
+    /*
     intface = EXECUTE;
     if(exec_cxt.periodic.type == ProxySynchronousExecutionContext) {
       if(onExecute() == RTC_OK) {
@@ -258,18 +309,20 @@ PRIVATE void _PacketHandlerOnActive() {
       }
 
     }
-    m_pTransport->SendPacket(intface, 1, &ret);
+    */
+    m_pTransport->SendPacket(EXECUTE, 1, &ret);
     break;
-  case SEND_DATA:
-    intface = SEND_DATA;
-    {
+  case SEND_DATA: {
       InPort* pInPort = m_Profile.getInPort(
-					  &(m_pPacketBuffer[DATA_START_ADDR+2]),
-					  m_pPacketBuffer[DATA_START_ADDR]);
+					    &(m_pPacketBuffer[DATA_START_ADDR+2]),
+					    m_pPacketBuffer[DATA_START_ADDR]);
       if(pInPort == NULL) {
+
       } else {
+	m_pExecutionContext->suspend();
 	pInPort->push(&(m_pPacketBuffer[DATA_START_ADDR+2+m_pPacketBuffer[DATA_START_ADDR]]), m_pPacketBuffer[DATA_START_ADDR+1]);
-	ret = RTNO_OK;
+	m_pExecutionContext->resume();
+	m_pTransport->SendPacket(SEND_DATA, 1, &ret);
       }
     }
     break;

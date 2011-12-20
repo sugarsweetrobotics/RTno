@@ -1,11 +1,26 @@
 /**
- * joyStick.pde
+ * RTno_Template.pde
  * RTno is RT-middleware and arduino.
  *
- * This program is just for JoyStick Shield sold by spackfun.com
- * 
- * Pin Settings:
- * 
+ * Using RTno, arduino device can communicate any RT-components 
+ *  through the RTno-proxy component which is launched in PC.
+ * Connect arduino with USB, and program with RTno library.
+ * You do not have to define any protocols to establish communication
+ *  between arduino and PC.
+ *
+ * Using RTno, you must not define the function "setup" and "loop".
+ * Those functions are automatically defined in the RTno libarary.
+ * You, developers, must define following functions:
+ *  int onInitialize(void);
+ *  int onActivated(void);
+ *  int onDeactivated(void);
+ *  int onExecute(void);
+ *  int onError(void);
+ *  int onReset(void);
+ * These functions are spontaneously called by the RTno-proxy
+ *  RT-component which is launched in the PC.
+ * @author Yuki Suga
+ * This code is written/distributed for public-domain.
  */
 
 #include <RTno.h>
@@ -17,36 +32,42 @@
  */
 void rtcconf(void) {
   conf._default.connection_type = ConnectionTypeSerial1;
+  // conf._default.connection_type = ConnectionTypeSerial2; // This configuration is avaiable in Arduino-Mega
+  // conf._default.connection_type = ConnectionTypeSerial3; // This configuration is avaiable in Arduino-Mega
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
+  // exec_cxt.periodic.type = Timer1ExecutionContext; // onExecute is called by Timer1. Period must be specified by 'rate' option.
+  // *caution: TimerOne can not be used with PWM 9, 10.
+  // exec_cxt.periodic.rate = 1000; // [Hz] This option is indispensable when type is Timer*ExecutionContext.
 }
+
 
 /** 
  * Declaration Division:
  *
  * DataPort and Data Buffer should be placed here.
  *
- * Currently, following 6 types are available.
- * TimedLong:
- * TimedDouble:
- * TimedFloat:
- * TimedLongSeq:
- * TimedDoubleSeq:
- * TimedFloatSeq:
+ * available data types are as follows:
+ * TimedLong
+ * TimedDouble
+ * TimedFloat
+ * TimedLongSeq
+ * TimedDoubleSeq
+ * TimedFloatSeq
  *
  * Please refer following comments. If you need to use some ports,
  * uncomment the line you want to declare.
  **/
+//TimedLong in0;
+//InPort in0In("in0", in0);
+//TimedLongSeq in0;
+//InPort in0In("in0", in0);
 
-TimedLongSeq stick;
-OutPort stickOut("stick", stick);
+//TimedLong out0;
+//OutPort out0Out("out0", out0);
+//TimedLongSeq out0;
+//OutPort out0Out("out0", out0);
 
-TimedLongSeq button;
-OutPort buttonOut("button", button);
-
-int channelStickX = 0;
-int channelStickY = 1;
-int channelStickZ = 2;
 
 //////////////////////////////////////////
 // on_initialize
@@ -61,27 +82,15 @@ int channelStickZ = 2;
 //////////////////////////////////////////
 int RTno::onInitialize() {
   /* Data Ports are added in this section.
+  addInPort(in0In);
+  addInPort(in1In);
+  addOutPort(out0Out);
+  addOutPort(out1Out);
   */
-  addOutPort(stickOut);
-  addOutPort(buttonOut);
-
-  pinMode(channelStickX, INPUT);
-  pinMode(channelStickY, INPUT);
-  pinMode(channelStickZ, INPUT);
-  digitalWrite(channelStickZ, HIGH);
   
-  pinMode(3, INPUT);
-  digitalWrite(3, HIGH);
-  pinMode(4, INPUT);
-  digitalWrite(4, HIGH);
-  pinMode(5, INPUT);
-  digitalWrite(5, HIGH);
-  pinMode(6, INPUT);
-  digitalWrite(6, HIGH);
-  
-  stick.data.length(3);
-  button.data.length(4);
-   
+  // Some initialization (like port direction setting)
+  // int LED = 13;
+  // pinMode(LED, OUTPUT);
   return RTC_OK; 
 }
 
@@ -100,7 +109,7 @@ int RTno::onActivated() {
 }
 
 /////////////////////////////////////////////
-// on_deactfivated
+// on_deactivated
 // This function is called when the RTnoRTC
 // is deactivated.
 /////////////////////////////////////////////
@@ -119,24 +128,39 @@ int RTno::onDeactivated()
 // ERROR condition.r
 //////////////////////////////////////////////
 int RTno::onExecute() {
-  /*
-   * Input digital data
-   */
-   
+
+  /**
+   * Usage of InPort with premitive type.
+  if(in0In.isNew()) {
+    in0In.read();
+    long data = in0.data;
+  } 
+  */
   
-  /*
-   * Output digital data in Voltage unit.
-   */
-  stick.data[0] = analogRead(channelStickX); 
-  stick.data[1] = analogRead(channelStickY);
-  stick.data[2] = digitalRead(channelStickZ);
-  stickOut.write();
+  /**
+   * Usage of InPort with sequence type
+  if(in0In.isNew(&in1In)) {
+    in0In.read();
+    for(int i = 0;i < in0.data.length;i++) {
+      long data_buffer = in0.data[i];
+    }
+  }
+  */
   
-  button.data[0] = digitalRead(3);
-  button.data[1] = digitalRead(4);
-  button.data[2] = digitalRead(5);
-  button.data[3] = digitalRead(6);
-  buttonOut.write();
+  /**
+   * Usage of OutPort with primitive type.
+  out0.data = 3.14159;
+  out0Out.write();
+  */
+  
+  /**
+   * Usage of OutPort with sequence type.
+  out0.data.length(3);
+  out0.data[0] = 1.1;
+  out0.data[1] = 2.2;
+  out0.data[2] = 3.3;
+  out0Out.write();
+  */
     
   return RTC_OK; 
 }
@@ -166,5 +190,4 @@ int RTno::onReset()
 {
   return RTC_OK;
 }
-
 

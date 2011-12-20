@@ -13,6 +13,7 @@
 
 #define RTC_OK 0
 #define RTC_ERROR -1
+#define RTC_PRECONDITION_NOT_MET -2
 
 #include "BasicDataType.h"
 #include "InPort.h"

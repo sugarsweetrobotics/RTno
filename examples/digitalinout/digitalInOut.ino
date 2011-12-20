@@ -2,23 +2,31 @@
  * digitalInOut.pde
  * RTno is RT-middleware and arduino.
  *
- * Using RTno, arduino device can communicate any RT-components 
- *  through the RTno-proxy component which is launched in PC.
- * Connect arduino with USB, and program with RTno library.
- * You do not have to define any protocols to establish communication
- *  between arduino and PC.
+ * This is a simple example for RTno begineer.
+ * This program just use general I/O pin.
  *
- * Using RTno, you must not define the function "setup" and "loop".
- * Those functions are automatically defined in the RTno libarary.
- * You, developers, must define following functions:
- *  int onInitialize(void);
- *  int onActivated(void);
- *  int onDeactivated(void);
- *  int onExecute(void);
- *  int onError(void);
- *  int onReset(void);
- * These functions are spontaneously called by the RTno-proxy
- *  RT-component which is launched in the PC.
+ * I/O pin settings:
+ * Pin [ 8,  9, 10, 11, 12, 13] ... Output Pins.
+ * Pin [ 2,  3,  4,  5,  6,  7] ... Input Pins.
+ *
+ * I/O port settings:
+ * Port "in0"
+ *  -type       : TimedLongSeq
+ *  -data length: 6
+ *  -description: each data element corresponds to the output pin level.
+ *                If data is 0, corresponding output pin will LOW (0 Volt)
+ *                If data is non-zero, pin will HIGH (Vcc level).
+ *                The 6th element corresponds to the 13th pin (LED pin),
+ *                so you can confirm this program's behavior without any 
+ *                modification to the arduino board.
+ *
+ * Port "out0"
+ *  -type       : TimedLongSeq
+ *  -data length: 6
+ *  -description: each data element corresponds to the input pin level.
+ *                If data is 0, corresponding output pin will LOW (0 Volt)
+ *                If data is non-zero, pin will HIGH (Vcc level).
+ *
  */
 
 #include <RTno.h>
@@ -29,6 +37,7 @@
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
+  conf._default.connection_type = ConnectionTypeSerial1;
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
@@ -79,7 +88,7 @@ int RTno::onInitialize() {
   for(int i = 0;i < 6;i++) {
     pinMode(8+i, OUTPUT);
   }
-  
+   
   return RTC_OK; 
 }
 
@@ -98,7 +107,7 @@ int RTno::onActivated() {
 }
 
 /////////////////////////////////////////////
-// on_deactivated
+// on_deactfivated
 // This function is called when the RTnoRTC
 // is deactivated.
 /////////////////////////////////////////////
@@ -117,10 +126,10 @@ int RTno::onDeactivated()
 // ERROR condition.r
 //////////////////////////////////////////////
 int RTno::onExecute() {
-
   /*
    * Input digital data
    */
+   
   if(in0In.isNew()) {
     in0In.read();
     for(int i = 0;i < in0.data.length() && i < 6;i++) {

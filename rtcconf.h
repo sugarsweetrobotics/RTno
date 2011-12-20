@@ -11,9 +11,10 @@ struct config_str {
 };
 
 struct exec_cxt_str {
-	struct periodic_str {
-		unsigned char type;
-	}periodic;
+  struct periodic_str {
+    unsigned char type;
+    double rate;
+  }periodic;
 };
 
 #define ConnectionTypeSerial1 0x01

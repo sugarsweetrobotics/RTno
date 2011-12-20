@@ -44,7 +44,7 @@ class PortBase {
 
   int GetLength() {
     if(!isSequenceType()) {
-      return 1;
+      return 1; 
     } else {
       return ((TimedDataSeq*)m_pData)->GetBuffer()->length();
     }

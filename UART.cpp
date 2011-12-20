@@ -16,11 +16,11 @@ UART::UART(int num, unsigned long baudrate)
 	  m_pSerial = &Serial;
 	  break;
 #endif
-#if defined(UBRR1H)
-		case 1:
-		m_pSerial = &Serial1;
-		break;
-#endif
+//#if defined(UBRR1H)
+//		case 1:
+//		m_pSerial = &Serial1;
+//		break;
+//#endif
 #if defined(UBRR2H)
 		case 2:
 		m_pSerial = &Serial2;

@@ -23,11 +23,11 @@
 #define DATA_START_ADDR 2
 
 enum {
-  CREATED='C',
-  INACTIVE='I',
-  ACTIVE='A',
-  ERROR='E',
-  NONE='N',
+  RTC_STATE_CREATED='C',
+  RTC_STATE_INACTIVE='I',
+  RTC_STATE_ACTIVE='A',
+  RTC_STATE_ERROR='E',
+  RTC_STATE_NONE='N',
 };
 
 

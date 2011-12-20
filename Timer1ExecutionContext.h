@@ -1,20 +1,26 @@
 #ifndef TIMER1_EXECUTION_CONTEXT
 #define TIMER1_EXECUTION_CONTEXT
 
-class Timer1EC {
- private:
-  long m_Period;
- public:
-  Timer1EC(long microsecond);
-  virtual ~Timer1EC();
+#include "ExecutionContext.h"
 
- public:
-  void start();
-  
-  void suspend();
-  
-  void resume();
-  
+namespace RTC {
+  class Timer1EC : public ExecutionContext {
+  private:
+    long m_Period;
+  public:
+    Timer1EC(double microsecond);
+    virtual ~Timer1EC();
+    byte m_ClockSetting;
+    
+  public:
+    void start();
+    
+    void suspend();
+    
+    void resume();
+    
+  };
 };
+
 
 #endif

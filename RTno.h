@@ -20,6 +20,11 @@
 #include "OutPort.h"
 #include "rtcconf.h"
 
+#include "UARTTransport.h"
+#ifdef ethernet_h
+#include "EtherTCPTransport.h"
+#endif
+
 #define PACKET_BUFFER_SIZE 128
 
 #define MAX_PORT 8
@@ -34,6 +39,9 @@ extern  config_str conf;
 extern "C" {
   void rtcconf(void);
 };
+
+
+
 
 extern "C" {
   void addInPort(InPort& inPort);
@@ -94,8 +102,33 @@ extern "C" {
   int onReset();
   };// extern "C"
 };
+extern Transport* m_pTransport;
 
-
+#ifndef RTNO_SUBMODULE_DEFINE
+void Connection_setup() {
+  switch(conf._default.connection_type) {
+  case ConnectionTypeSerial1:
+    m_pTransport = new UARTTransport(1, conf._default.baudrate);
+    break;
+  case ConnectionTypeSerial2:
+    m_pTransport = new UARTTransport(2, conf._default.baudrate);
+    break;
+  case ConnectionTypeSerial3:
+    m_pTransport = new UARTTransport(3, conf._default.baudrate);
+    break;
+#ifdef ethernet_h
+  case ConnectionTypeEtherTcp:
+    m_pTransport = new EtherTcpTransport(conf._default.mac_address.value,
+					 conf._default.ip_address.value,
+					 conf._default.default_gateway.value,
+					 conf._default.subnet_mask.value,
+					 conf._default.port);
+#endif
+  default:
+    return;
+  }
+}
+#endif
 
 #endif
 

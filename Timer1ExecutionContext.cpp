@@ -1,3 +1,5 @@
+#define RTNO_SUBMODULE_DEFINE
+
 #include <Arduino.h>
 #include "RTno.h"
 #include "Packet.h"

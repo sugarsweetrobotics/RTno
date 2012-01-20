@@ -1,3 +1,5 @@
+#define RTNO_SUBMODULE_DEFINE
+
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include "UART.h"

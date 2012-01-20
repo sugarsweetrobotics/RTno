@@ -1,9 +1,8 @@
+#define RTNO_SUBMODULE_DEFINE
+
 #include <Arduino.h>
 
 #include "RTnoProfile.h"
-
-
-
 
 RTnoProfile::RTnoProfile()
 {

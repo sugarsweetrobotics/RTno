@@ -4,12 +4,16 @@
  * @copyright Yuki Suga (ysuga.net) Nov, 10th, 2010.
  * @license LGPLv3
  *****************************************/
+#define RTNO_SUBMODULE_DEFINE
 #include <Arduino.h>
+
+
 
 #include "RTno.h"
 #include "Packet.h"
 
 #include "UARTTransport.h"
+#include "EtherTcpTransport.h"
 #include "RTnoProfile.h"
 #include "Timer1ExecutionContext.h"
 #include "ProxySyncEC.h"
@@ -23,7 +27,7 @@ exec_cxt_str exec_cxt;
 // module private variables.
 #define PRIVATE static
 
-PRIVATE Transport *m_pTransport;
+Transport *m_pTransport;
 // PRIVATE char m_Condition = CREATED;
 PRIVATE char m_pPacketBuffer[PACKET_BUFFER_SIZE];
 PRIVATE RTnoProfile m_Profile;
@@ -60,6 +64,8 @@ PRIVATE void _PacketHandlerOnInactive();
 PRIVATE void _PacketHandlerOnActive();
 
 
+void Connection_setup();
+
 /**
  * Arduino Setup Routine.
  * This function is called when arduino device is turned on.
@@ -68,37 +74,24 @@ void setup() {
 
   // This function must be called first.
   rtcconf();
-
-  switch(conf._default.connection_type) {
-  case ConnectionTypeSerial1:
-    m_pTransport = new UARTTransport(1, conf._default.baudrate);
-    break;
-  case ConnectionTypeSerial2:
-    m_pTransport = new UARTTransport(2, conf._default.baudrate);
-    break;
-  case ConnectionTypeSerial3:
-    m_pTransport = new UARTTransport(3, conf._default.baudrate);
-    break;
-  default:
-    return;
-  }
-
-  switch(exec_cxt.periodic.type) {
-  case Timer1ExecutionContext:
-    {
-      m_pExecutionContext = new RTC::Timer1EC(exec_cxt.periodic.rate);
-    }
-    break;
-  default:
-  case ProxySynchronousExecutionContext:
-    {
-      m_pExecutionContext = new RTC::ProxySyncEC();
-    }
-    break;
-  }
-
-
   if(onInitialize() == RTC_OK) {
+    Connection_setup();
+    switch(exec_cxt.periodic.type) {
+    case Timer1ExecutionContext:
+      {
+	m_pExecutionContext = new RTC::Timer1EC(exec_cxt.periodic.rate);
+      }
+      break;
+    default:
+    case ProxySynchronousExecutionContext:
+      {
+	m_pExecutionContext = new RTC::ProxySyncEC();
+      }
+      break;
+    }
+    
+
+    
     //    m_Condition = INACTIVE;
     m_pExecutionContext->start();  
   } else {
@@ -117,6 +110,7 @@ void loop() {
 
   if(ret < 0) { // Timeout Error or Checksum Error
     m_pTransport->SendPacket(PACKET_ERROR, 1, &ret);
+  } else if (ret == 0) {
   } else if (ret > 0) { // Packet is successfully received
     if (m_pPacketBuffer[INTERFACE] == GET_PROFILE) {
       _SendProfile();

@@ -5,7 +5,7 @@
  * @license LGPLv3
  *****************************************/
 
-
+#define RTNO_SUBMODULE_DEFINE
 #include <string.h>
 #include "Packet.h"
 #include "BasicDataType.h"

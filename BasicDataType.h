@@ -8,129 +8,62 @@
 #ifndef BASIC_DATA_TYPE_HEADER_INCLUDED
 #define BASIC_DATA_TYPE_HEADER_INCLUDED
 
-#include "SequenceDataType.h"
-#include "SequenceOctet.h"
-#include "SequenceChar.h"
-#include "SequenceBoolean.h"
-#include "SequenceLong.h"
-#include "SequenceDouble.h"
-#include "SequenceFloat.h"
-/*
-typedef struct __Time__ {
-  long sec;
-  long usec;
-}Time;
-*/
-
-class TimedData {
- public:
-  virtual void* GetBuffer() { return 0;}
-};
-
-class TimedBoolean : public TimedData {
- public:
+#include "Sequence.h"
+#pragma pack(1)
+struct TimedBoolean  {
+  static const char typeCode = 'b';
   char data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'b';
 };
 
-class TimedChar : public TimedData {
- public:
+
+struct TimedChar {
+  static const char typeCode = 'c';
   char data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'c';
 };
 
-class TimedOctet : public TimedData {
- public:
+
+struct TimedOctet {
+  static const char typeCode = 'o';
   char data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'o';
 };
 
-class TimedLong : public TimedData{
-  //  Time timestamp;
- public:
+struct TimedLong {
+  static const char typeCode = 'l';
   long data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'l';
 };
 
-class TimedDouble : public TimedData {
-//  Time timestamp;
- public:
+struct TimedDouble {
+  static const char typeCode = 'd';
   double data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'd';
 };
 
-class TimedFloat : public TimedData {
-  //  unsigned char length;
-public:
+class TimedFloat {
   float data;
-  void* GetBuffer(){ return &data; }
-  const static char typecode = 'f';
 };
 
-class TimedDataSeq {
- public:
-  virtual SequenceDataType* GetBuffer(){return 0;}
+
+struct TimedOctetSeq {
+  Sequence<char> data;
 };
 
-class TimedOctetSeq : public TimedDataSeq {
-  //  Time timestamp;
-  //  long length;
- public:
-  SequenceOctet data;
- SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'O';
+struct TimedCharSeq {
+  Sequence<char> data;
 };
 
-class TimedCharSeq : public TimedDataSeq {
-  //  Time timestamp;
-  //  long length;
- public:
-  SequenceChar data;
- SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'C';
+struct TimedBooleanSeq {
+  Sequence<char> data;
 };
 
-class TimedBooleanSeq : public TimedDataSeq {
-  //  Time timestamp;
-  //  long length;
- public:
-  SequenceBoolean data;
- SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'B';
+struct TimedLongSeq {
+  Sequence<long> data;
 };
 
-class TimedLongSeq : public TimedDataSeq {
-  //  Time timestamp;
-  //  long length;
- public:
-  SequenceLong data;
- SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'L';
+struct TimedFloatSeq {
+  Sequence<float> data;
 };
 
-class TimedFloatSeq : public TimedDataSeq {
-  //  Time timestamp;
-  //  long length;
-  //  float* data;
- public:
-  SequenceFloat data;
-  SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'F';
-};
-
-struct TimedDoubleSeq : public TimedDataSeq {
-//  Time timestamp;
-  //  long length;
-  //  double* data;
- public:
-  SequenceDouble data;
-  SequenceDataType* GetBuffer() {return &data;}
-  const static char typecode = 'D';
+struct TimedDoubleSeq {
+  Sequence<double> data;
 };
 
 

@@ -4,15 +4,13 @@
 
 #include "PortBase.h"
 
-class PortProfile {
+typedef struct _PortProfile {
 public:
-	int length;
-	char* data;
-	
-public:
-	PortProfile(PortBase &Port);
-	virtual ~PortProfile();
-};
+  int length;
+  char* data;
+}PortProfile;
 
 
+PortProfile* PortProfile_create(const char* name, const char typeCode);
+void PortProfile_destroy(PortProfile* pProfile);
 #endif // #ifndef PORT_PROFILE_HEADER_INCLUDED

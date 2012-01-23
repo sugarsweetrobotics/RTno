@@ -1,6 +1,9 @@
 #ifndef PROXY_SYNC_EXECUTION_CONTEXT
 #define PROXY_SYNC_EXECUTION_CONTEXT
+#include "ExecutionContext.h"
+void ProxySyncEC_init();
 
+#if 0
 
 namespace RTC {
   class ProxySyncEC : public ExecutionContext {
@@ -15,5 +18,6 @@ namespace RTC {
     void resume(){};
   };
 };
+#endif
 
 #endif //#ifndef PROXY_SYNC_EXECUTION_CONTEXT

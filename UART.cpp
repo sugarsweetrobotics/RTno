@@ -4,8 +4,9 @@
 #include <HardwareSerial.h>
 #include "UART.h"
 
+static HardwareSerial* m_pSerial;
 
-UART::UART(int num, unsigned long baudrate)
+void UART_init(unsigned char num, unsigned long baudrate)
 {
 	switch(num) {
 #if defined(UBRRH)
@@ -37,28 +38,30 @@ UART::UART(int num, unsigned long baudrate)
 		return;
 		break;
 	}
+	SerialDevice_putc = UART_putc;
+	SerialDevice_getc = UART_getc;
+	SerialDevice_available = UART_available;
 	m_pSerial->begin(baudrate);
 }
 
-
-UART::~UART()
-{
-	
-}
-
+/*
 void UART::write(const void* data, int size)
 {
 	m_pSerial->write((const uint8_t*)data, size);
 }
+*/
 
+void UART_putc(const char c) {
+  m_pSerial->write((const uint8_t*)&c, 1);
+}
 
-int UART::available()
+unsigned char UART_available()
 {
-	return m_pSerial->available();
+  return m_pSerial->available();
 }
 
 
-int UART::read()
+char UART_getc()
 {
-	return m_pSerial->read();
+  return m_pSerial->read();
 }

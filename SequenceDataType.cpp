@@ -14,7 +14,9 @@
 
 SequenceDataType::SequenceDataType(void** ptrptr)
 {
-  m_ptrptr = ptrptr;*m_ptrptr = 0;len = 0;
+  m_ptrptr = ptrptr;
+  *m_ptrptr = 0;
+  len = 0;
 }
 
 SequenceDataType::~SequenceDataType()
@@ -30,18 +32,3 @@ void SequenceDataType::length(int size)
   *m_ptrptr = (void*)malloc(size * SizeofData());
 }
 
-#if 0
-int SequenceDataType::SizeofData() {
-  switch(m_TypeCode) {
-  case 'b':
-  case 'B':
-  case 'o':
-  case 'O':
-  case 'c':
-  case 'C':
-    return 1;
-  default:
-    return 4;
-  }
-}
-#endif

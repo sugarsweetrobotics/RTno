@@ -19,10 +19,11 @@
 #include "InPort.h"
 #include "OutPort.h"
 #include "rtcconf.h"
-
-#include "UARTTransport.h"
+#include "UART.h"
+//#include "UARTTransport.h"
 #ifdef ethernet_h
-#include "EtherTCPTransport.h"
+//#include "EtherTCPTransport.h"
+#include "EtherTcp.h"
 #endif
 
 #define PACKET_BUFFER_SIZE 128
@@ -44,8 +45,8 @@ extern "C" {
 
 
 extern "C" {
-  void addInPort(InPort& inPort);
-  void addOutPort(OutPort& outPort);
+  void addInPort(InPortBase& inPort);
+  void addOutPort(OutPortBase& outPort);
 }
 
 namespace RTno {
@@ -102,27 +103,27 @@ extern "C" {
   int onReset();
   };// extern "C"
 };
-extern Transport* m_pTransport;
+//extern SerialDevice* g_pSerialDevice;
 
 #ifndef RTNO_SUBMODULE_DEFINE
 void Connection_setup() {
   switch(conf._default.connection_type) {
   case ConnectionTypeSerial1:
-    m_pTransport = new UARTTransport(1, conf._default.baudrate);
+    UART_init(1, conf._default.baudrate);
     break;
   case ConnectionTypeSerial2:
-    m_pTransport = new UARTTransport(2, conf._default.baudrate);
+    UART_init(2, conf._default.baudrate);
     break;
   case ConnectionTypeSerial3:
-    m_pTransport = new UARTTransport(3, conf._default.baudrate);
+    UART_init(3, conf._default.baudrate);
     break;
 #ifdef ethernet_h
   case ConnectionTypeEtherTcp:
-    m_pTransport = new EtherTcpTransport(conf._default.mac_address.value,
-					 conf._default.ip_address.value,
-					 conf._default.default_gateway.value,
-					 conf._default.subnet_mask.value,
-					 conf._default.port);
+    EtherTcp_init(conf._default.mac_address.value,
+		  conf._default.ip_address.value,
+		  conf._default.default_gateway.value,
+		  conf._default.subnet_mask.value,
+		  conf._default.port);
 #endif
   default:
     return;

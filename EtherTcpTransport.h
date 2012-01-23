@@ -1,7 +1,8 @@
 #ifndef ETHER_TCP_TRANSPORT_HEADER_INCLUDED
 #define ETHER_TCP_TRANSPORT_HEADER_INCLUDED
 
-
+#include "EtherTcp.h"
+/*
 #include "Transport.h"
 
 class EtherTcpTransport : public Transport {
@@ -12,5 +13,5 @@ class EtherTcpTransport : public Transport {
   virtual ~EtherTcpTransport();
 
 };
-
+**/
 #endif //#ifndef ETHER_TCP_TRANSPORT_HEADER_INCLUDED

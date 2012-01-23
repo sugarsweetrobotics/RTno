@@ -11,81 +11,22 @@
 #include "BasicDataType.h"
 #include "PortBuffer.h"
 
-class PortBase {
- private:
-  PortBuffer *m_pPortBuffer;
-    
- protected:
-  void* m_pData;
-  char* m_pName;
-  char m_TypeCode;
-  
- public:
-  PortBase(char* name);
-  ~PortBase();
+typedef struct _PortBase {
+  unsigned char portBuffer;
+  void* pData;
+  char* pName;
+  char typeCode;
+  PortBuffer *pPortBuffer;
+} PortBase;
 
- public:
-  char* GetName() {return m_pName;}
-  char GetTypeCode() {return m_TypeCode;}
+PortBase* PortBase_create(const char* name, char typeCode, void* dataBuffer);
+void PortBase_destroy(PortBase* pPortBase);
 
-  int isSequenceType() {
-    switch(m_TypeCode) {
-    case 'b':
-    case 'o':
-    case 'c':
-    case 'l':
-    case 'd':
-    case 'f':
-      return 0;
-    default:
-      return 1;
-    }
-  }
-
-  int GetLength() {
-    if(!isSequenceType()) {
-      return 1; 
-    } else {
-      return ((TimedDataSeq*)m_pData)->GetBuffer()->length();
-    }
-  }
-
-  void SetLength(int len) {
-    if(!isSequenceType()) {
-      return;
-    }
-    SequenceDataType *seqData = ((TimedDataSeq*)m_pData)->GetBuffer();
-    seqData->length(len);
-  }
-
-  void* GetBuffer() {
-    void* pBuffer;
-      if(!isSequenceType()) {
-      //      if (len != 1) return 0;// -INVALID_PACKET_DATASIZE;
-	pBuffer = ((TimedData*)m_pData)->GetBuffer();
-    } else {
-      SequenceDataType *seqData = ((TimedDataSeq*)m_pData)->GetBuffer();
-      pBuffer = seqData->GetBuffer();
-    }
-    return pBuffer;
-  }
+unsigned char PortBase_isSequence(PortBase* pPortBase);
+unsigned char PortBase_getLength(PortBase* pPortBase);
+void PortBase_setLength(PortBase* pPortBase, int length);
+PortBuffer* PortBase_getBuffer(PortBase* pPortBase);
 
 
-  void push(const char* data, int size) {
-    m_pPortBuffer->push(data, size);
-  }
-
-  void pop(char* data, int size) {
-    m_pPortBuffer->pop(data, size);
-  }
-  
-  int hasNext() {
-    return m_pPortBuffer->hasNext();
-  }
-
-  int getNextDataSize() {
-    return m_pPortBuffer->getNextDataSize();
-  }
-};
 
 #endif

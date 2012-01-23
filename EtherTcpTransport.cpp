@@ -2,7 +2,7 @@
 #include "EtherTcp.h"
 #include "EtherTcpTransport.h"
 
-
+/*N
 
 EtherTcpTransport::EtherTcpTransport(byte *mac, byte *ip, byte *gateway, byte *subnet, unsigned  short port)
 {
@@ -16,3 +16,4 @@ EtherTcpTransport::~EtherTcpTransport()
 }
 
 
+*/

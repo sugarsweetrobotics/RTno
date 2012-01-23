@@ -9,34 +9,47 @@
  *****************************************/
 
 #include "OutPortBase.h"
+#include "NullBuffer.h"
+#include "TypeCode.h"
+#include <string.h>
+#include <stdlib.h>
 
-class OutPort : public OutPortBase
-{
+class OutPortBase : public PortBase {
  private:
-  //  void* m_pData;
 
  public:
-  OutPort(char* name, TimedBoolean& pData);
-  OutPort(char* name, TimedChar& pData);
-  OutPort(char* name, TimedOctet& pData);
-
-  OutPort(char* name, TimedLong& pData);
-  OutPort(char* name, TimedFloat& pData);
-  OutPort(char* name, TimedDouble& pData);
-
-  OutPort(char* name, TimedBooleanSeq& pData);
-  OutPort(char* name, TimedCharSeq& pData);
-  OutPort(char* name, TimedOctetSeq& pData);
-
-  OutPort(char* name, TimedLongSeq& pData);
-  OutPort(char* name, TimedFloatSeq& pData);
-  OutPort(char* name, TimedDoubleSeq& pData);
-
-  ~OutPort();
+  OutPortBase(const char* name) {
+    pName = (char*)malloc(strlen(name)+1);
+    strcpy(pName, name);
+    typeCode = 0;
+    pData = NullBuffer_create();
+  }
 
  public:
-  int SizeofData();
-  int write();
+  //  char* GetName() {return m_pPortBase->pName;}
+};
+
+template<typename T>
+class OutPort : public OutPortBase {
+ private:
+  T* m_pData;
+  
+ public:
+ OutPort(const char* name, T& data) : OutPortBase(name) {
+    m_pData = &data;
+    typeCode = data.typeCode;
+  }
+  ~OutPort() {}
+
+ public:
+  int write() {
+    int size = TypeCode_getElementSize(m_pData->typeCode);
+    if(TypeCode_isSequence(m_pData->typeCode)) {
+      size *= ((SequenceBase)(m_pData->data)).length();
+    }
+    PortBuffer_push(pPortBuffer, &(m_pData->data), size);
+    return size;
+  }
 };
 
 

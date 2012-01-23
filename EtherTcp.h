@@ -4,10 +4,17 @@
 
 
 #include "SerialDevice.h"
-#include <../SPI/SPI.h>
-#include <../Ethernet/Ethernet.h>
+//#include "../SPI/SPI.h"
+//#include "../Ethernet/Ethernet.h"
+
+void EtherTcp_init(byte *mac, byte *ip, byte *gateway, byte *subnet, unsigned short port);
+
+void EtherTcp_putc(const char c);
+unsigned char EtherTcp_available();
+char EtherTcp_getc();
 
 
+#if 0
 class EtherTcp : public SerialDevice {
  private:
 
@@ -25,5 +32,6 @@ class EtherTcp : public SerialDevice {
 
   virtual int read();
 };
+#endif
 
 #endif // #ifndef ETHER_HEADER_INCLUDED

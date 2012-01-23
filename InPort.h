@@ -9,36 +9,47 @@
  *****************************************/
 
 #include "InPortBase.h"
+#include "NullBuffer.h"
+#include <string.h>
+#include <stdlib.h>
 
-class InPort : public InPortBase {
+class InPortBase : public PortBase{
  private:
-  //  int isSequence;
- public:
-  InPort(char* name, TimedOctet &Data);
-  InPort(char* name, TimedBoolean &Data);
-  InPort(char* name, TimedChar &Data);
-
-  InPort(char* name, TimedLong &Data);
-  InPort(char* name, TimedFloat &Data);
-  InPort(char* name, TimedDouble &Data);
-
-  InPort(char* name, TimedOctetSeq &Data);
-  InPort(char* name, TimedBooleanSeq &Data);
-  InPort(char* name, TimedCharSeq &Data);
-
-  InPort(char* name, TimedLongSeq &Data);
-  InPort(char* name, TimedFloatSeq &Data);
-  InPort(char* name, TimedDoubleSeq &Data);
-
-  ~InPort();
 
  public:
-  int isNew();
-  int read();
-  int SizeofData();
-  
+  InPortBase(char* name) {
+    pName = (char*)malloc(strlen(name)+1);
+    strcpy(pName, name);
+    typeCode = 0;
+    pPortBuffer = NullBuffer_create();
+  }
 
+ public:
 
+};
+
+template<typename T>
+class InPort : public InPortBase {
+ public:
+  T* m_pData;
+ public:
+ InPort(char* name, T& data) : InPortBase(name) {
+    m_pData = &data;
+    typeCode = data.typeCode;
+  }
+
+  ~InPort() {}
+ public:
+  int isNew() {
+    return pPortBuffer->hasNext(pPortBuffer);
+  }
+
+  int read() {
+    int dataSize = pPortBuffer->getNextDataSize(pPortBuffer);
+    // This code must be okay for little endian system.
+    pPortBuffer->pop(pPortBuffer, (char*)&(m_pData->data), dataSize);
+    return dataSize;
+  }
 
 };
 

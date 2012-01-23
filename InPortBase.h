@@ -10,7 +10,7 @@
 
 #include "PortBase.h"
 #include "PortBuffer.h"
-
+#if 0
 class InPortBase : public PortBase {
 protected:
 
@@ -27,4 +27,5 @@ protected:
 
 
 };
+#endif
 #endif

@@ -4,62 +4,68 @@
 
 #include "RTnoProfile.h"
 
-RTnoProfile::RTnoProfile()
+static int numInPort = 0;
+static int numOutPort = 0;
+static PortBase *m_ppInPort[MAX_PORT];
+static PortBase *m_ppOutPort[MAX_PORT];
+
+void RTnoProfile_init()
 {
-	numInPort = 0;
-	numOutPort = 0;
-	for(int i = 0;i < MAX_PORT;i++) {
-		m_ppInPort[i] = NULL;
-		m_ppOutPort[i] = NULL;
-	}
+}
+
+int RTnoProfile_addInPort(PortBase* port) 
+{
+  if(numInPort == 8) return -1;
+  m_ppInPort[numInPort] = port;	
+  numInPort++;
+  return numInPort;
 }
 
 
-RTnoProfile::~RTnoProfile()
+int RTnoProfile_addOutPort(PortBase* port) 
 {
-//	for(int i = 0;i < MAX_PORT;i++) {
-//		delete m_ppInPortProfile[i];
-//		delete m_ppOutPortProfile[i];
-//	}
+  if(numOutPort == 8) return -1;
+  m_ppOutPort[numOutPort] = port;
+  numOutPort++;
+  return numOutPort;
+}
+
+int RTnoProfile_getNumInPort() {
+  return numInPort;
 }
 
 
-int RTnoProfile::addInPort(InPort& port) 
-{
-	if(numInPort == 8) return -1;
+int RTnoProfile_getNumOutPort() {
+  return numOutPort;
+}
 
-	m_ppInPort[numInPort] = &port;	
-	numInPort++;
-	return numInPort;
+PortBase* RTnoProfile_getInPort(const char* name, int nameLen)
+{
+  for(int i = 0;i < numInPort;i++) {
+    if(strncmp(name, m_ppInPort[i]->pName, nameLen) == 0) {
+      return m_ppInPort[i];
+    }
+  }
+  return NULL;
 }
 
 
-int RTnoProfile::addOutPort(OutPort& port) 
+PortBase* RTnoProfile_getOutPort(const char* name, int nameLen)
 {
-	if(numOutPort == 8) return -1;
-	
-	m_ppOutPort[numOutPort] = &port;
-	numOutPort++;
-	return numOutPort;
+  for(int i = 0;i < numOutPort;i++) {
+    if(strncmp(name, m_ppOutPort[i]->pName, nameLen) == 0) {
+      return m_ppOutPort[i];
+    }
+  }
+  return NULL;
 }
 
-InPort* RTnoProfile::getInPort(const char* name, int nameLen)
+PortBase* RTnoProfile_getInPortByIndex(const int i)
 {
-	for(int i = 0;i < numInPort;i++) {
-		if(strncmp(name, m_ppInPort[i]->GetName(), nameLen) == 0) {
-			return m_ppInPort[i];
-		}
-	}
-	return NULL;
+  return m_ppInPort[i];
 }
 
-
-OutPort* RTnoProfile::getOutPort(const char* name, int nameLen)
+PortBase* RTnoProfile_getOutPortByIndex(const int i)
 {
-	for(int i = 0;i < numOutPort;i++) {
-		if(strncmp(name, m_ppOutPort[i]->GetName(), nameLen) == 0) {
-			return m_ppOutPort[i];
-		}
-	}
-	return NULL;
+  return m_ppOutPort[i];
 }

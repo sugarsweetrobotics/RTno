@@ -1,7 +1,12 @@
 #include <Arduino.h>
 #include "EtherTcp.h"
+#include <../SPI/SPI.h>
+#include <../Ethernet/Ethernet.h>
 
-EtherTcp::EtherTcp(byte* mac, byte* ip, 
+static EthernetServer *m_pServer;
+static EthernetClient *m_pClient;
+
+void EtherTcp_init(byte* mac, byte* ip, 
 		   byte* gateway, byte* subnet, 
 		   unsigned short port) 
 {
@@ -9,38 +14,40 @@ EtherTcp::EtherTcp(byte* mac, byte* ip,
   Ethernet.begin(mac, ip, dns, gateway, subnet);
   m_pServer = new EthernetServer(port);
   m_pServer->begin();
-  m_Client = m_pServer->available();
+  m_pClient = new EthernetClient();
+  *m_pClient = m_pServer->available();
+
+  SerialDevice_available = EtherTcp_available;
+  SerialDevice_getc = EtherTcp_getc;
+  SerialDevice_putc = EtherTcp_putc;
 }
 
-EtherTcp::~EtherTcp()
+unsigned char EtherTcp_available()
 {
-
-
-}
-
-int EtherTcp::available()
-{
-
-  if(m_Client) {
-    return m_Client.available();
+  if(*m_pClient) {
+    return m_pClient->available();
   } else {
-    m_Client = m_pServer->available();
-    if(m_Client) {
-      return m_Client.available();
+    *m_pClient = m_pServer->available();
+    if(*m_pClient) {
+      return m_pClient->available();
     }
   }
   return 0;
 }
 
 
-void EtherTcp::write(const void* data, int size)
+void EtherTcp_putc(const char c) {
+  m_pServer->write(c);
+}
+/*
+d EtherTcp::write(const void* data, int size)
 {
   for(int i = 0;i < size;i++) {
     m_pServer->write(*(((const unsigned char*)data)+i));
   }
-}
+  }*/
 
-int EtherTcp::read()
+char EtherTcp_getc()
 {
-  return m_Client.read();
+  return m_pClient->read();
 }

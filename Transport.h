@@ -3,6 +3,13 @@
 
 #include "SerialDevice.h"
 
+int Transport_init();//SerialDevice* pSerialDevice);
+
+int Transport_SendPacket(const char interface, const char data_length, const char* packet_data);
+	
+int Transport_ReceivePacket(unsigned char* packet);
+
+/*
 class Transport {
 	
 private:
@@ -20,5 +27,5 @@ public:
 	int ReceivePacket(unsigned char* packet);
 	
 };
-
+*/
 #endif

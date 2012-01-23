@@ -1,7 +1,7 @@
 #ifndef UART_TRANSPORT_HEADER_INCLUDED
 #define UART_TRANSPORT_HEADER_INCLUDED
 
-
+/*
 #include "Transport.h"
 
 class UARTTransport : public Transport {
@@ -14,5 +14,5 @@ public:
 	
 	~UARTTransport();
 };
-
+*/
 #endif // #ifndef UART_TRANSPORT_HEADER_INCLUDED

@@ -4,6 +4,12 @@
 #include "SerialDevice.h"
 #include <HardwareSerial.h>
 
+void UART_init(unsigned char num, unsigned long baudrate);
+void UART_putc(const char c);
+unsigned char UART_available();
+char UART_getc();
+
+#if 0
 class UART : public SerialDevice {
 private:
 	
@@ -33,6 +39,6 @@ public:
 	virtual int read();
 
 };
-
+#endif
 
 #endif

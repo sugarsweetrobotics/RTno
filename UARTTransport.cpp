@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "UARTTransport.h"
 #include "UART.h"
-
+/*
 
 UARTTransport::UARTTransport(int num, unsigned long baudrate)
 {
@@ -13,3 +13,4 @@ UARTTransport::~UARTTransport()
 {
   delete m_pSerialDevice;
 }
+n*/

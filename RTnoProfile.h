@@ -6,41 +6,18 @@
 #include "InPort.h"
 #include "OutPort.h"
 
-class RTnoProfile {
 
-private:
-	int numInPort;
-	InPort *m_ppInPort[MAX_PORT];
-	int numOutPort;
-	OutPort *m_ppOutPort[MAX_PORT];
+void RTnoProfile_init();
+int RTnoProfile_addInPort(PortBase* port);
+int RTnoProfile_addOutPort(PortBase* port);
 
-public:
-	RTnoProfile();
-	virtual ~RTnoProfile();
+PortBase* RTnoProfile_getInPort(const char* name, int nameLen);
+PortBase* RTnoProfile_getOutPort(const char* name, int nameLen);
+PortBase* RTnoProfile_getInPortByIndex(const int i);
+PortBase* RTnoProfile_getOutPortByIndex(const int i);
 
-	int addInPort(InPort& port);
-	int addOutPort(OutPort& port);
-	
-	InPort* getInPort(int index) {
-	  return m_ppInPort[index];
-	}
-	OutPort* getOutPort(int index) {
-	  return m_ppOutPort[index];
-	}
-	
-	InPort* getInPort(const char* name, int nameLen);
-	OutPort* getOutPort(const char* name, int nameLen);
-
- public:
-	int getNumOutPort() {
-	  return numOutPort;
-	}
-
-	int getNumInPort() {
-	  return numInPort;
-	}
-};
-
+int RTnoProfile_getNumInPort();
+int RTnoProfile_getNumOutPort();
 
 #endif
 

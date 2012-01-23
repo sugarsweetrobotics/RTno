@@ -1,6 +1,12 @@
 #ifndef SERIAL_DEVICE_HEADER_INCLUDED
 #define SERIAL_DEVICE_HEADER_INCLUDED
 
+extern void(*SerialDevice_putc)(const char c);
+extern unsigned char(*SerialDevice_available)();
+extern char(*SerialDevice_getc)();
+
+
+#if 0
 class SerialDevice {
 	
 	
@@ -23,5 +29,6 @@ public:
 	 */
 	virtual int read() = 0;
 };
+#endif
 
 #endif

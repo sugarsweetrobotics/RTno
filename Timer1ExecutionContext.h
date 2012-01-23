@@ -3,6 +3,12 @@
 
 #include "ExecutionContext.h"
 
+void Timer1EC_init(double microsecond);
+void Timer1EC_start();
+void Timer1EC_suspend();
+void Timer1EC_resume();
+
+#if 0
 namespace RTC {
   class Timer1EC : public ExecutionContext {
   private:
@@ -21,6 +27,6 @@ namespace RTC {
     
   };
 };
-
+#endif
 
 #endif

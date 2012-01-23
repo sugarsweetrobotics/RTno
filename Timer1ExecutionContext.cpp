@@ -7,18 +7,23 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-using namespace RTC;
+//using namespace RTC;
 
-static RTC::Timer1EC *m_pEC;
+static long m_Period;
+static byte m_ClockSetting;
+
+//static RTC::Timer1EC *m_pEC;
 
 ISR(TIMER1_OVF_vect)
 {
-  m_pEC->execute();
+  //  m_pEC->execute();
+  EC_execute();
 }
 
 
-Timer1EC::Timer1EC(double rate) : ExecutionContext()
+void Timer1EC_init(double rate)
 {
+  EC_init();
   TCCR1A = 0;
   TCCR1B = 0x10;
 
@@ -50,26 +55,28 @@ Timer1EC::Timer1EC(double rate) : ExecutionContext()
 
   //TIMSK1 = 0x01;
 
-  m_pEC= this;
-
+  //  m_pEC= this;
+  EC_start = Timer1EC_start;
+  EC_suspend = Timer1EC_suspend;
+  EC_resume = Timer1EC_resume;
 }
-
+/*
 Timer1EC::~Timer1EC()
 {
 }
-
-void Timer1EC::start()
+*/
+void Timer1EC_start()
 {
   TIMSK1 = 0x01;
   TCCR1B |= m_ClockSetting;
 }
 
-void Timer1EC::suspend()
+void Timer1EC_suspend()
 {
   TIMSK1 &= 0xFE;
 }
 
-void Timer1EC::resume()
+void Timer1EC_resume()
 {
   TIMSK1 |= 0x01;
 }

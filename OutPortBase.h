@@ -10,7 +10,7 @@
 #define OUTPORT_BASE_HEADER_INCLUDED
 
 #include "PortBase.h"
-
+#if 0
 class OutPortBase : public PortBase {
 
  public:
@@ -20,5 +20,5 @@ class OutPortBase : public PortBase {
   //  virtual bool write(char* src, int size) = 0;
 
 };
-
+#endif
 #endif

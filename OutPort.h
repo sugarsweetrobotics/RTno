@@ -9,6 +9,7 @@
  *****************************************/
 
 #include "PortBase.h"
+#include "PortBuffer.h"
 #include "NullBuffer.h"
 #include "TypeCode.h"
 #include <string.h>
@@ -45,9 +46,9 @@ class OutPort : public OutPortBase {
   int write() {
     int size = TypeCode_getElementSize(m_pData->typeCode);
     if(TypeCode_isSequence(m_pData->typeCode)) {
-      size *= ((SequenceBase)(m_pData->data)).length();
+      size *= ((SequenceBase*)(&(m_pData->data)))->length();
     }
-    PortBuffer_push(pPortBuffer, &(m_pData->data), size);
+    pPortBuffer->push(pPortBuffer, (const char*)&(m_pData->data), size);
     return size;
   }
 };

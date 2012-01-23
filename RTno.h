@@ -15,15 +15,34 @@
 #define RTC_ERROR -1
 #define RTC_PRECONDITION_NOT_MET -2
 
+
+#ifdef UART_HEADER_INCLUDED
+#define USE_UART_CONNECTION
+#endif
+
 #ifdef ethernet_h
 #define USE_ETHERNET_CONNECTION
+#else
+#ifndef USE_UART_CONNECTION // for backward compatibility
+#define USE_UART_CONNECTION 
 #endif
+
+#endif
+
+#ifdef TIMER1_EXECUTION_CONTEXT
+#define USE_TIMER1_EC
+#endif
+
 
 #include "BasicDataType.h"
 #include "InPort.h"
 #include "OutPort.h"
 #include "rtcconf.h"
+
+#ifdef USE_UART_CONNECTION
 #include "UART.h"
+#endif
+
 #ifdef USE_ETHERNET_CONNECTION
 #include "EtherTcp.h"
 #endif
@@ -110,7 +129,7 @@ extern "C" {
 
 #ifndef RTNO_SUBMODULE_DEFINE
 
-#ifdef TIMER1_EXECUTION_CONTEXT
+#ifdef USE_TIMER1_EC
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -122,7 +141,7 @@ ISR(Timer1_OVF_vect)
 
 void EC_setup() {
   switch(exec_cxt.periodic.type) {
-#ifdef TIMER1_EXECUTION_CONTEXT
+#ifdef USE_TIMER1_EC
   case Timer1ExecutionContext:
     Timer1EC_init(exec_cxt.periodic.rate);
     break;
@@ -136,7 +155,9 @@ void EC_setup() {
 
 
 void Connection_setup() {
+
   switch(conf._default.connection_type) {
+#ifdef USE_UART_CONNECTION
   case ConnectionTypeSerial1:
     UART_init(1, conf._default.baudrate);
     break;
@@ -146,6 +167,7 @@ void Connection_setup() {
   case ConnectionTypeSerial3:
     UART_init(3, conf._default.baudrate);
     break;
+#endif
 #ifdef USE_ETHERNET_CONNECTION
   case ConnectionTypeEtherTcp:
     EtherTcp_init(conf._default.mac_address.value,

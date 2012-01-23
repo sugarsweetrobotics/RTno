@@ -30,6 +30,7 @@
 // Second, configure exec_cxt.periodic.type = Timer1EexecutionContext
 // Third, configure exec_cxt.periodic.rate = *** [Hz]
 #include <Timer1ExecutionContext.h> 
+#include <UART.h>
 #include <RTno.h>
 
 /**

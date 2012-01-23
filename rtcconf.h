@@ -45,29 +45,36 @@ struct MacAddr {
 struct config_str {
   struct default_str {
     unsigned char connection_type;
-    unsigned short port;
+
 
 #ifdef USE_ETHERNET_CONNECTION
     MacAddr mac_address;
     IPAddr ip_address;
     IPAddr subnet_mask;
     IPAddr default_gateway;
+    unsigned short port;
 #endif
-
+#ifdef USE_UART_CONNECTION
     long baudrate;
+#endif
   }_default;
 };
 
 struct exec_cxt_str {
   struct periodic_str {
     unsigned char type;
+#ifdef USE_TIMER1_EC
     double rate;
+#endif
   }periodic;
 };
 
+#ifdef USE_UART_CONNECTION
 #define ConnectionTypeSerial1 0x01
 #define ConnectionTypeSerial2 0x02
 #define ConnectionTypeSerial3 0x03
+#endif
+
 #ifdef USE_ETHERNET_CONNECTION
 #define ConnectionTypeEtherTcp 0x04
 #endif

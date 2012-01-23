@@ -18,6 +18,7 @@
  */
 
 // Never use Timer1ExecutionContext with Tlc5940 library.
+#include <UART.h>
 #include <RTno.h>
 #include <Tlc5940.h>
 #include <tlc_servos.h>

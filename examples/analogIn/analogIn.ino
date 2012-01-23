@@ -20,7 +20,7 @@
  * These functions are spontaneously called by the RTno-proxy
  *  RT-component which is launched in the PC.
  */
-
+#include <UART.h>
 #include <RTno.h>
 
 /**

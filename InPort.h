@@ -8,7 +8,7 @@
  * @license LGPLv3
  *****************************************/
 
-#include "InPortBase.h"
+#include "PortBase.h"
 #include "NullBuffer.h"
 #include <string.h>
 #include <stdlib.h>

@@ -39,6 +39,11 @@
  */
 //#include <Timer1ExecutionContext.h>
 
+/** 
+ * Include UART.h header
+ *  to use ConnectionTypeSerial1, 2, 3
+ */
+#include <UART.h>
 #include <RTno.h>
 
 /**

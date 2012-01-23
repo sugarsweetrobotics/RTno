@@ -29,6 +29,7 @@
  *
  */
 
+#include <UART.h>
 #include <RTno.h>
 
 /**

@@ -9,6 +9,7 @@
  * This code is written/distributed for public-domain.
  */
 
+#include <UART.h>
 #include <RTno.h>
 
 /**

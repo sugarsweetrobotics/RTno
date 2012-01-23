@@ -13,8 +13,7 @@
 #include "Packet.h"
 
 #include "Transport.h"
-#include "UARTTransport.h"
-#include "EtherTcpTransport.h"
+#include "UART.h"
 #include "RTnoProfile.h"
 
 

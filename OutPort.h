@@ -8,7 +8,7 @@
  * @license LGPLv3
  *****************************************/
 
-#include "OutPortBase.h"
+#include "PortBase.h"
 #include "NullBuffer.h"
 #include "TypeCode.h"
 #include <string.h>
@@ -26,7 +26,7 @@ class OutPortBase : public PortBase {
   }
 
  public:
-  //  char* GetName() {return m_pPortBase->pName;}
+
 };
 
 template<typename T>

@@ -16,8 +16,8 @@
 #include "UARTTransport.h"
 #include "EtherTcpTransport.h"
 #include "RTnoProfile.h"
-#include "Timer1ExecutionContext.h"
-#include "ProxySyncEC.h"
+
+
 
 using namespace RTno;
 
@@ -55,7 +55,7 @@ PRIVATE void _PacketHandlerOnInactive();
  */
 PRIVATE void _PacketHandlerOnActive();
 
-
+void EC_setup();
 void Connection_setup();
 
 /**
@@ -69,16 +69,7 @@ void setup() {
   if(onInitialize() == RTC_OK) {
     Connection_setup();
     Transport_init();//g_pSerialDevice);
-    switch(exec_cxt.periodic.type) {
-    case Timer1ExecutionContext:
-      Timer1EC_init(exec_cxt.periodic.rate);
-      break;
-    default:
-    case ProxySynchronousExecutionContext:
-      ProxySyncEC_init();
-      break;
-    }
-
+    EC_setup();
     EC_start();
   } else {
 

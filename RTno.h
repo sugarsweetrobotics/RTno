@@ -15,17 +15,20 @@
 #define RTC_ERROR -1
 #define RTC_PRECONDITION_NOT_MET -2
 
+#ifdef ethernet_h
+#define USE_ETHERNET_CONNECTION
+#endif
+
 #include "BasicDataType.h"
 #include "InPort.h"
 #include "OutPort.h"
 #include "rtcconf.h"
 #include "UART.h"
-//#include "UARTTransport.h"
-#ifdef ethernet_h
-//#include "EtherTCPTransport.h"
+#ifdef USE_ETHERNET_CONNECTION
 #include "EtherTcp.h"
 #endif
 
+#include "ProxySyncEC.h"
 #define PACKET_BUFFER_SIZE 128
 
 #define MAX_PORT 8
@@ -106,6 +109,32 @@ extern "C" {
 //extern SerialDevice* g_pSerialDevice;
 
 #ifndef RTNO_SUBMODULE_DEFINE
+
+#ifdef TIMER1_EXECUTION_CONTEXT
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+ISR(Timer1_OVF_vect)
+{
+  EC_execute();
+}
+#endif
+
+void EC_setup() {
+  switch(exec_cxt.periodic.type) {
+#ifdef TIMER1_EXECUTION_CONTEXT
+  case Timer1ExecutionContext:
+    Timer1EC_init(exec_cxt.periodic.rate);
+    break;
+#endif
+  default:
+  case ProxySynchronousExecutionContext:
+    ProxySyncEC_init();
+    break;
+  }
+}
+
+
 void Connection_setup() {
   switch(conf._default.connection_type) {
   case ConnectionTypeSerial1:
@@ -117,7 +146,7 @@ void Connection_setup() {
   case ConnectionTypeSerial3:
     UART_init(3, conf._default.baudrate);
     break;
-#ifdef ethernet_h
+#ifdef USE_ETHERNET_CONNECTION
   case ConnectionTypeEtherTcp:
     EtherTcp_init(conf._default.mac_address.value,
 		  conf._default.ip_address.value,

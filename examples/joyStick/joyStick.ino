@@ -39,10 +39,10 @@ void rtcconf(void) {
  **/
 
 TimedLongSeq stick;
-OutPort stickOut("stick", stick);
+OutPort<TimedLongSeq> stickOut("stick", stick);
 
 TimedLongSeq button;
-OutPort buttonOut("button", button);
+OutPort<TimedLongSeq> buttonOut("button", button);
 
 int channelStickX = 0;
 int channelStickY = 1;

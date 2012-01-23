@@ -1,53 +1,53 @@
 /**
- * Timer1EC.pde
+ * LiquidCrystal.ino
  * RTno is RT-middleware and arduino.
+ * 
+ * This example uses LiquidCrystal library.
+ * http://arduino.cc/en/Reference/LiquidCrystalConstructor
  *
- * This sample program uses Timer1ExecutionContext.
- * Timer1ExecutionContext is an ExecutionContext which
- * calls onExecute function periodically when the RTno
- * is in ACTIVE state.
- *
- * Timer1ExecutionContext uses TimerOne module to make 
- * the periodic interruption so the period is comparably 
- * accurate, but the PWM 9, 10 can not be used when TimerOne
- * is used.
- *
- * TimerOne module is originally developed by 
- * http://code.google.com/p/arduino-timerone/
- *
- * This sample program just flash the LED (13th pin)
- * when RTno is activated.
- *
- * Change the exec_cxt.periodic.rate option and confirm 
- * the flashing period changes.
+ * This program is tested by LCD shield by Prototyping Lab.
+ * http://prototypinglab.com
  *
  * @author Yuki Suga
  * This code is written/distributed for public-domain.
  */
-
-// If you want to use Timer1 Execution Context
-// First, include this header.
-// Second, configure exec_cxt.periodic.type = Timer1EexecutionContext
-// Third, configure exec_cxt.periodic.rate = *** [Hz]
-#include <Timer1ExecutionContext.h> 
 #include <RTno.h>
+#include <LiquidCrystal.h>
 
 /**
  * This function is called at first.
  * conf._default.baudrate: baudrate of serial communication
- * exec_cxt.periodic.type: Timer1
+ * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
-  conf._default.baudrate = 57600;
   conf._default.connection_type = ConnectionTypeSerial1;
-  exec_cxt.periodic.type = Timer1ExecutionContext;
-  exec_cxt.periodic.rate = 1; // [Hz]
+  conf._default.baudrate = 57600;
+  exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
 
 
-// No InPort and OutPort.
+/** 
+ * Declaration Division:
+ *
+ * DataPort and Data Buffer should be placed here.
+ *
+ * available data types are as follows:
+ * TimedLong
+ * TimedDouble
+ * TimedFloat
+ * TimedLongSeq
+ * TimedDoubleSeq
+ * TimedFloatSeq
+ *
+ * Please refer following comments. If you need to use some ports,
+ * uncomment the line you want to declare.
+ **/
+TimedLong in0;
+InPort<TimedLong> in0In("in0", in0);
 
-int LED = 13;
+
+// Initialize the library with the numbers of the interface pins.
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 //////////////////////////////////////////
 // on_initialize
@@ -61,9 +61,14 @@ int LED = 13;
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  // LED pin Initialization
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);
+  /* Data Ports are added in this section. */
+  addInPort(in0In);
+ 
+  lcd.begin(16, 2);
+  
+  lcd.setCursor(0, 0);
+  lcd.print("RTC_INACTIVE  ");
+   
   return RTC_OK; 
 }
 
@@ -78,6 +83,8 @@ int RTno::onInitialize() {
 int RTno::onActivated() {
   // Write here initialization code.
   
+  lcd.setCursor(0, 0);
+  lcd.print("RTC_ACTIVE   ");
   return RTC_OK; 
 }
 
@@ -89,7 +96,8 @@ int RTno::onActivated() {
 int RTno::onDeactivated()
 {
   // Write here finalization code.
-
+  lcd.setCursor(0, 0);
+  lcd.print("RTC_INACTIVE   ");
   return RTC_OK;
 }
 
@@ -102,15 +110,18 @@ int RTno::onDeactivated()
 //////////////////////////////////////////////
 int RTno::onExecute() {
 
-  static int i;
-  if(i == 0) {
-    digitalWrite(LED, HIGH);
-    i = 1;
-  } else {
-    digitalWrite(LED, LOW);
-    i = 0;
-  }
-
+  /**
+   * Usage of InPort with premitive type.
+   */
+  if(in0In.isNew()) {
+    in0In.read();
+    long data = in0.data;
+    lcd.setCursor(0, 1);
+    lcd.print("data=           ");
+    lcd.setCursor(6,1);
+    lcd.print(data, DEC);
+  } 
+    
   return RTC_OK; 
 }
 
@@ -139,5 +150,4 @@ int RTno::onReset()
 {
   return RTC_OK;
 }
-
 

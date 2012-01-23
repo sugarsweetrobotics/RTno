@@ -1,27 +1,27 @@
 /**
- * analogIn.pde
+ * RTnoArm.pde
  * RTno is RT-middleware and arduino.
  *
- * Using RTno, arduino device can communicate any RT-components 
- *  through the RTno-proxy component which is launched in PC.
- * Connect arduino with USB, and program with RTno library.
- * You do not have to define any protocols to establish communication
- *  between arduino and PC.
+ * This example depends on the Tlc5940arduino library.
+ * http://code.google.com/p/tlc5940arduino/downloads/list
+ * This module uses Timer1, so Timer1ExecutionContext can not
+ * be used with this.
  *
- * Using RTno, you must not define the function "setup" and "loop".
- * Those functions are automatically defined in the RTno libarary.
- * You, developers, must define following functions:
- *  int onInitialize(void);
- *  int onActivated(void);
- *  int onDeactivated(void);
- *  int onExecute(void);
- *  int onError(void);
- *  int onReset(void);
- * These functions are spontaneously called by the RTno-proxy
- *  RT-component which is launched in the PC.
+ * Use PWM shield by sparkfun.com
+ * http://www.sparkfun.com/products/10615
+ * This shield is properly arranged on the signal pins.
+ * 
+ * InPort: TimedLongSeq -- max 16 PWM servos' degree (0 to 180)
+ *
+ * @author Yuki Suga
+ * This code is written/distributed for public-domain.
  */
 
+// Never use Timer1ExecutionContext with Tlc5940 library.
 #include <RTno.h>
+#include <Tlc5940.h>
+#include <tlc_servos.h>
+
 
 /**
  * This function is called at first.
@@ -29,47 +29,46 @@
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
+  conf._default.connection_type = ConnectionTypeSerial1;
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
+
 
 /** 
  * Declaration Division:
  *
  * DataPort and Data Buffer should be placed here.
  *
- * Currently, following 6 types are available.
- * TimedLong:
- * TimedDouble:
- * TimedFloat:
- * TimedLongSeq:
- * TimedDoubleSeq:
- * TimedFloatSeq:
+ * available data types are as follows:
+ * TimedLong
+ * TimedDouble
+ * TimedFloat
+ * TimedLongSeq
+ * TimedDoubleSeq
+ * TimedFloatSeq
  *
  * Please refer following comments. If you need to use some ports,
  * uncomment the line you want to declare.
  **/
-TimedFloatSeq out0;
-OutPort out0Out("out0", out0);
+TimedLongSeq in0;
+InPort<TimedLongSeq> in0In("in0", in0);
+
 
 //////////////////////////////////////////
 // on_initialize
 //
 // This function is called in the initialization
-// sequence. The sequence is triggered by the
-// PC. When the RTnoRTC is launched in the PC,
-// then, this function is remotely called
-// through the USB cable.
+// sequence when th processor is turned on.
 // In on_initialize, usually DataPorts are added.
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  /* Data Ports are added in this section.
-  */
-  addOutPort(out0Out);
-  
-  // Some initialization (like port direction setting)
+  /* Data Ports are added in this section. */
+  addInPort(in0In);
 
+  tlc_initServos();
+  
   return RTC_OK; 
 }
 
@@ -108,14 +107,20 @@ int RTno::onDeactivated()
 //////////////////////////////////////////////
 int RTno::onExecute() {
 
-  /*
-   * Output analog data in Voltage unit.
+  /**
+   * Usage of InPort with premitive type.
    */
-  out0.data.length(6);
-  for(int i = 0;i < 6;i++) {
-    out0.data[i] = (analogRead(i) * 5.0f) / 1024;
-  }
-  out0Out.write();
+
+  if(in0In.isNew()) {
+    in0In.read();
+    for(int i = 0; i < in0.data.length() && i < 16;i++) {
+      tlc_setServo(i, in0.data[i]); 
+    }
+    Tlc.update();
+  } 
+
+  
+
     
   return RTC_OK; 
 }
@@ -145,5 +150,4 @@ int RTno::onReset()
 {
   return RTC_OK;
 }
-
 

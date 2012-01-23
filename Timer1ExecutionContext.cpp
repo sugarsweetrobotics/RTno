@@ -14,12 +14,13 @@ static byte m_ClockSetting;
 
 //static RTC::Timer1EC *m_pEC;
 
+/*
 ISR(TIMER1_OVF_vect)
 {
   //  m_pEC->execute();
   EC_execute();
 }
-
+*/
 
 void Timer1EC_init(double rate)
 {

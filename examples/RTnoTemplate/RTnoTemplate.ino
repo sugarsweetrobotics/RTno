@@ -1,5 +1,5 @@
 /**
- * RTno_Template.pde
+ * RTnoTemplate.ino
  * RTno is RT-middleware and arduino.
  *
  * Using RTno, arduino device can communicate any RT-components 
@@ -22,6 +22,22 @@
  * @author Yuki Suga
  * This code is written/distributed for public-domain.
  */
+/**
+ * Include "SPI.h" and "Ethernet.h" headers 
+ *  to use Ethernet module.
+ * If you do not need to use ethernet module,
+ *  do not include them, which make the compiled
+ *　 binary much smaller.
+ */
+//#include <SPI.h> 
+//#include <Ethernet.h>
+
+/**
+ * Include Timer1ExecutionContext.h header
+ *  to use Timer1ExecutionContext
+ * See Timer1EC example to know in more detail
+ */
+//#include <Timer1ExecutionContext.h>
 
 #include <RTno.h>
 
@@ -34,8 +50,17 @@ void rtcconf(void) {
   conf._default.connection_type = ConnectionTypeSerial1;
   // conf._default.connection_type = ConnectionTypeSerial2; // This configuration is avaiable in Arduino-Mega
   // conf._default.connection_type = ConnectionTypeSerial3; // This configuration is avaiable in Arduino-Mega
+  // conf._default.connection_type = ConnectionTypeEtherTcp; // This configuration is avaiable with Ethernet Shield.
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
+  
+  // Configurations Below are configuration parameter for EtherTcp connection.
+  // conf._default.port = 23;
+  // conf._default.mac_address = MacAddr(0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED);
+  // conf._default.ip_address = IPAddr(192,168,42,100);
+  // conf._default.subnet_mask = IPAddr(255,255,255,0);
+  // conf._default.default_gateway = IPAddr(192,168,42,254);
+
   // exec_cxt.periodic.type = Timer1ExecutionContext; // onExecute is called by Timer1. Period must be specified by 'rate' option.
   // *caution: TimerOne can not be used with PWM 9, 10.
   // exec_cxt.periodic.rate = 1000; // [Hz] This option is indispensable when type is Timer*ExecutionContext.
@@ -59,24 +84,21 @@ void rtcconf(void) {
  * uncomment the line you want to declare.
  **/
 //TimedLong in0;
-//InPort in0In("in0", in0);
-//TimedLongSeq in0;
-//InPort in0In("in0", in0);
+//InPort<TimedLong> in0In("in0", in0);
+//TimedLongSeq in1;
+//InPort<TimedLongSeq> in1In("in1", in1);
 
 //TimedLong out0;
-//OutPort out0Out("out0", out0);
-//TimedLongSeq out0;
-//OutPort out0Out("out0", out0);
+//OutPort<TimedLong> out0Out("out0", out0);
+//TimedLongSeq out1;
+//OutPort<TimedLongSeq> out1Out("out1", out1);
 
 
 //////////////////////////////////////////
 // on_initialize
 //
 // This function is called in the initialization
-// sequence. The sequence is triggered by the
-// PC. When the RTnoRTC is launched in the PC,
-// then, this function is remotely called
-// through the USB cable.
+// sequence when th processor is turned on.
 // In on_initialize, usually DataPorts are added.
 //
 //////////////////////////////////////////
@@ -139,10 +161,10 @@ int RTno::onExecute() {
   
   /**
    * Usage of InPort with sequence type
-  if(in0In.isNew(&in1In)) {
-    in0In.read();
-    for(int i = 0;i < in0.data.length;i++) {
-      long data_buffer = in0.data[i];
+  if(in1In.isNew(&in1In)) {
+    in1In.read();
+    for(int i = 0;i < in1.data.length;i++) {
+      long data_buffer = in1.data[i];
     }
   }
   */
@@ -155,11 +177,11 @@ int RTno::onExecute() {
   
   /**
    * Usage of OutPort with sequence type.
-  out0.data.length(3);
-  out0.data[0] = 1.1;
-  out0.data[1] = 2.2;
-  out0.data[2] = 3.3;
-  out0Out.write();
+  out1.data.length(3);
+  out1.data[0] = 1.1;
+  out1.data[1] = 2.2;
+  out1.data[2] = 3.3;
+  out1Out.write();
   */
     
   return RTC_OK; 

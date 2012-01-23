@@ -2,28 +2,33 @@
  * Ethernet.ino
  * RTno is RT-middleware and arduino.
  *
- * Using RTno, arduino device can communicate any RT-components 
- *  through the RTno-proxy component which is launched in PC.
- * Connect arduino with USB, and program with RTno library.
- * You do not have to define any protocols to establish communication
- *  between arduino and PC.
+ * This example works with Ethernet Shield by arduino.cc
+ * Ethernet Shield uses SPI module and SD card which is
+ * on digital pins 4, 10, 11, 12, and 13 on the UNO, and
+ * on digital pins 50, 51, 52, and 53 on the Mega.
+ * see
+ * http://arduino.cc/en/Main/ArduinoEthernetShield
  *
- * Using RTno, you must not define the function "setup" and "loop".
- * Those functions are automatically defined in the RTno libarary.
- * You, developers, must define following functions:
- *  int onInitialize(void);
- *  int onActivated(void);
- *  int onDeactivated(void);
- *  int onExecute(void);
- *  int onError(void);
- *  int onReset(void);
- * These functions are spontaneously called by the RTno-proxy
- *  RT-component which is launched in the PC.
+ * !!CAUTION!!
+ * Specify your Ethernet Shield's version.
+ * In case you use old version, your shield is not
+ * available to use with arduino MEGA.
+ *
+ * Use serial connecction with the UNO to debug the
+ * input/output using Serila Monitor on arduino IDE.
  * @author Yuki Suga
  * This code is written/distributed for public-domain.
  */
 
-#include <SPI.h>
+
+/**
+ * Include "SPI.h" and "Ethernet.h" headers 
+ *  to use Ethernet module.
+ * If you do not need to use ethernet module,
+ *  do not include them, which make the compiled
+ *　 binary much smaller.
+ */
+#include <SPI.h> 
 #include <Ethernet.h>
 #include <RTno.h>
 
@@ -34,9 +39,6 @@
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
-  // conf._default.connection_type = ConnectionTypeSerial1;
-  // conf._default.connection_type = ConnectionTypeSerial2; // This configuration is avaiable in Arduino-Mega
-  // conf._default.connection_type = ConnectionTypeSerial3; // This configuration is avaiable in Arduino-Mega
   conf._default.connection_type = ConnectionTypeEtherTcp;
   
   conf._default.port = 23;
@@ -45,10 +47,8 @@ void rtcconf(void) {
   conf._default.subnet_mask = IPAddr(255,255,255,0);
   conf._default.default_gateway = IPAddr(192,168,42,254);
   
-  // conf._default.baudrate = 57600;
-  exec_cxt.periodic.type = ProxySynchronousExecutionContext;
-  // exec_cxt.periodic.type = Timer1ExecutionContext; // onExecute is called by Timer1. Period must be specified by 'rate' option.
-  // exec_cxt.periodic.rate = 1000; // [Hz] This option is indispensable when type is Timer*ExecutionContext.
+  exec_cxt.periodic.type = Timer1ExecutionContext;
+  exec_cxt.periodic.rate = 100;
 }
 
 
@@ -69,14 +69,11 @@ void rtcconf(void) {
  * uncomment the line you want to declare.
  **/
 TimedLong in0;
-InPort in0In("in0", in0);
-//TimedLongSeq in0;
-//InPort in0In("in0", in0);
+InPort<TimedLong> in0In("in0", in0);
+
 
 TimedLong out0;
-OutPort out0Out("out0", out0);
-//TimedLongSeq out0;
-//OutPort out0Out("out0", out0);
+OutPort<TimedLong> out0Out("out0", out0);
 
 
 //////////////////////////////////////////
@@ -96,7 +93,6 @@ int RTno::onInitialize() {
   addOutPort(out0Out);
   
   Serial.begin(9600);
-  
   Serial.println("onInitialized!!");
   return RTC_OK; 
 }
@@ -136,39 +132,25 @@ int RTno::onDeactivated()
 //////////////////////////////////////////////
 int RTno::onExecute() {
 
-  /**
-   * Usage of InPort with premitive type.
   if(in0In.isNew()) {
     in0In.read();
     long data = in0.data;
+    Serial.print("ReceivedData = "); Serial.println(data, DEC);
   } 
-  */
-  
-  /**
-   * Usage of InPort with sequence type
-  if(in0In.isNew(&in1In)) {
-    in0In.read();
-    for(int i = 0;i < in0.data.length;i++) {
-      long data_buffer = in0.data[i];
-    }
+
+  static int count;
+  count++;
+  if((count % 100) == 0) {
+    out0.data = count;
+    out0Out.write();
+    Serial.print("SentData = "); Serial.println(count, DEC);
   }
-  */
-  
   /**
    * Usage of OutPort with primitive type.
   out0.data = 3.14159;
   out0Out.write();
   */
   
-  /**
-   * Usage of OutPort with sequence type.
-  out0.data.length(3);
-  out0.data[0] = 1.1;
-  out0.data[1] = 2.2;
-  out0.data[2] = 3.3;
-  out0Out.write();
-  */
-    
   return RTC_OK; 
 }
 

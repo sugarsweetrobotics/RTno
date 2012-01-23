@@ -1,37 +1,19 @@
 /**
- * digitalInOut.pde
+ * RTnoVehicle.pde
  * RTno is RT-middleware and arduino.
  *
- * This is a simple example for RTno begineer.
- * This program just use general I/O pin.
+ * 
+ * 
  *
- * I/O pin settings:
- * Pin [ 8,  9, 10, 11, 12, 13] ... Output Pins.
- * Pin [ 2,  3,  4,  5,  6,  7] ... Input Pins.
- *
- * I/O port settings:
- * Port "in0"
- *  -type       : TimedLongSeq
- *  -data length: 6
- *  -description: each data element corresponds to the output pin level.
- *                If data is 0, corresponding output pin will LOW (0 Volt)
- *                If data is non-zero, pin will HIGH (Vcc level).
- *                The 6th element corresponds to the 13th pin (LED pin),
- *                so you can confirm this program's behavior without any 
- *                modification to the arduino board.
- *
- * Port "out0"
- *  -type       : TimedLongSeq
- *  -data length: 6
- *  -description: each data element corresponds to the input pin level.
- *                If data is 0, corresponding output pin will LOW (0 Volt)
- *                If data is non-zero, pin will HIGH (Vcc level).
- *
+ * @author Yuki Suga
+ * This code is written/distributed for public-domain.
  */
 
 #include <RTno.h>
 
 /**
+ * rtcconf()
+ *
  * This function is called at first.
  * conf._default.baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: reserved but not used.
@@ -42,53 +24,64 @@ void rtcconf(void) {
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
 
+
 /** 
  * Declaration Division:
  *
  * DataPort and Data Buffer should be placed here.
  *
- * Currently, following 6 types are available.
- * TimedLong:
- * TimedDouble:
- * TimedFloat:
- * TimedLongSeq:
- * TimedDoubleSeq:
- * TimedFloatSeq:
+ * available data types are as follows:
+ * TimedBoolean
+ * TimedChar
+ * TimedOctet
+ * TimedLong
+ * TimedDouble
+ * TimedFloat
+ * TimedBooleanSeq
+ * TimedCharSeq
+ * TimedOctetSeq
+ * TimedLongSeq
+ * TimedDoubleSeq
+ * TimedFloatSeq
  *
  * Please refer following comments. If you need to use some ports,
  * uncomment the line you want to declare.
  **/
 TimedLongSeq in0;
-InPort in0In("in0", in0);
+InPort<TimedLongSeq> in0In("vel", in0);
 
-TimedLongSeq out0;
-OutPort out0Out("out0", out0);
+/*
+ * Definition of I/O pin
+ */
+
+static const int pinMotorADir = 12;
+static const int pinMotorAPWM = 3;
+static const int pinMotorBDir = 13;
+static const int pinMotorBPWM = 11;
 
 //////////////////////////////////////////
 // on_initialize
 //
 // This function is called in the initialization
-// sequence. The sequence is triggered by the
-// PC. When the RTnoRTC is launched in the PC,
-// then, this function is remotely called
-// through the USB cable.
+// sequence when th processor is turned on.
 // In on_initialize, usually DataPorts are added.
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  /* Data Ports are added in this section.
-  */
+ 
+  /* Data Ports are added in this section. */
   addInPort(in0In);
-  addOutPort(out0Out);
   
   // Some initialization (like port direction setting)
-  for(int i = 0;i < 6;i++) {
-    pinMode(2+i, INPUT);
-  }
-  for(int i = 0;i < 6;i++) {
-    pinMode(8+i, OUTPUT);
-  }
-   
+  pinMode(pinMotorADir, OUTPUT);
+  pinMode(pinMotorBDir, OUTPUT);
+  pinMode(pinMotorAPWM, OUTPUT);
+  pinMode(pinMotorBPWM, OUTPUT);
+
+  digitalWrite(pinMotorADir, LOW);  
+  digitalWrite(pinMotorBDir, LOW);  
+  analogWrite(pinMotorAPWM, 0);
+  analogWrite(pinMotorBPWM, 0);
   return RTC_OK; 
 }
 
@@ -103,11 +96,16 @@ int RTno::onInitialize() {
 int RTno::onActivated() {
   // Write here initialization code.
   
+  digitalWrite(pinMotorADir, LOW);  
+  digitalWrite(pinMotorBDir, LOW);  
+  analogWrite(pinMotorAPWM, 0);
+  analogWrite(pinMotorBPWM, 0);
+
   return RTC_OK; 
 }
 
 /////////////////////////////////////////////
-// on_deactfivated
+// on_deactivated
 // This function is called when the RTnoRTC
 // is deactivated.
 /////////////////////////////////////////////
@@ -115,6 +113,10 @@ int RTno::onDeactivated()
 {
   // Write here finalization code.
 
+  digitalWrite(pinMotorADir, LOW);  
+  digitalWrite(pinMotorBDir, LOW);  
+  analogWrite(pinMotorAPWM, 0);
+  analogWrite(pinMotorBPWM, 0);
   return RTC_OK;
 }
 
@@ -126,27 +128,29 @@ int RTno::onDeactivated()
 // ERROR condition.r
 //////////////////////////////////////////////
 int RTno::onExecute() {
-  /*
-   * Input digital data
-   */
-   
+
+  /* Read Input Port */
   if(in0In.isNew()) {
     in0In.read();
-    for(int i = 0;i < in0.data.length() && i < 6;i++) {
-      digitalWrite(8+i, in0.data[i]);
+    long vel_a = in0.data[0];
+    long vel_b = in0.data[1];
+    if(vel_a < 0) {
+      digitalWrite(pinMotorADir, HIGH);
+      vel_a = -vel_a;
+    }else {
+      digitalWrite(pinMotorADir, LOW);
     }
-  }
-  
-  
-  /*
-   * Output digital data in Voltage unit.
-   */
-  out0.data.length(6);
-  for(int i = 0;i < 6;i++) {
-    out0.data[i] = digitalRead(2+i);
-  }
-  out0Out.write();
-    
+    if(vel_b < 0) {
+      digitalWrite(pinMotorBDir, HIGH);
+      vel_b = -vel_b;
+    } else {
+      digitalWrite(pinMotorBDir, LOW);
+    }
+    if(vel_a > 255) vel_a = 255;
+    if(vel_b > 255) vel_b = 255;
+    analogWrite(pinMotorAPWM, vel_a);
+    analogWrite(pinMotorBPWM, vel_b);
+  }   
   return RTC_OK; 
 }
 
@@ -160,6 +164,7 @@ int RTno::onExecute() {
 ///////////////////////////////////////
 int RTno::onError()
 {
+  /** Stop Vehilcle */
   return RTC_OK;
 }
 

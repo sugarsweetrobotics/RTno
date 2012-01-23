@@ -1,67 +1,68 @@
 /**
- * RTnoVehicle.pde
+ * digitalInOut.ino
  * RTno is RT-middleware and arduino.
  *
- * This project create Two wheel vehicle robot which is controlled by DirectInput RTC (ysuga.net).
- * 
+ * This is a simple example for RTno begineer.
+ * This program just use general I/O pin.
  *
- * @author Yuki Suga
- * This code is written/distributed for public-domain.
+ * I/O pin settings:
+ * Pin [ 8,  9, 10, 11, 12, 13] ... Output Pins.
+ * Pin [ 2,  3,  4,  5,  6,  7] ... Input Pins.
+ *
+ * I/O port settings:
+ * Port "in0"
+ *  -type       : TimedLongSeq
+ *  -data length: 6
+ *  -description: each data element corresponds to the output pin level.
+ *                If data is 0, corresponding output pin will LOW (0 Volt)
+ *                If data is non-zero, pin will HIGH (Vcc level).
+ *                The 6th element corresponds to the 13th pin (LED pin),
+ *                so you can confirm this program's behavior without any 
+ *                modification to the arduino board.
+ *
+ * Port "out0"
+ *  -type       : TimedLongSeq
+ *  -data length: 6
+ *  -description: each data element corresponds to the input pin level.
+ *                If data is 0, corresponding output pin will LOW (0 Volt)
+ *                If data is non-zero, pin will HIGH (Vcc level).
+ *
  */
 
 #include <RTno.h>
 
 /**
- * rtcconf()
- *
  * This function is called at first.
  * conf._default.baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
+  conf._default.connection_type = ConnectionTypeSerial1;
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
-
 
 /** 
  * Declaration Division:
  *
  * DataPort and Data Buffer should be placed here.
  *
- * available data types are as follows:
- * TimedBoolean
- * TimedChar
- * TimedOctet
- * TimedLong
- * TimedDouble
- * TimedFloat
- * TimedBooleanSeq
- * TimedCharSeq
- * TimedOctetSeq
- * TimedLongSeq
- * TimedDoubleSeq
- * TimedFloatSeq
+ * Currently, following 6 types are available.
+ * TimedLong:
+ * TimedDouble:
+ * TimedFloat:
+ * TimedLongSeq:
+ * TimedDoubleSeq:
+ * TimedFloatSeq:
  *
  * Please refer following comments. If you need to use some ports,
  * uncomment the line you want to declare.
  **/
 TimedLongSeq in0;
-InPort in0In("vel", in0);
+InPort<TimedLongSeq> in0In("in0", in0);
 
-/* LED */
-#define LED 13
-
-/*
- * Definition of I/O pin
- */
-#define RIGHT_IN0 3
-#define RIGHT_IN1 5
-#define LEFT_IN0  6
-#define LEFT_IN1  9
-
-// There must be stop band for stable control
-#define STOP_BAND 20
+TimedLongSeq out0;
+OutPort out0Out("out0", out0);
 
 //////////////////////////////////////////
 // on_initialize
@@ -75,22 +76,19 @@ InPort in0In("vel", in0);
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  /* Data Ports are added in this section. */
+  /* Data Ports are added in this section.
+  */
   addInPort(in0In);
+  addOutPort(out0Out);
   
   // Some initialization (like port direction setting)
-  pinMode(LED, OUTPUT);
-  
-  pinMode(RIGHT_IN0, OUTPUT);
-  pinMode(RIGHT_IN1, OUTPUT);
-  pinMode(LEFT_IN0, OUTPUT);
-  pinMode(LEFT_IN1, OUTPUT);
-  
-  /** Stop Vehilcle */
-  analogWrite(RIGHT_IN0, 0);
-  analogWrite(RIGHT_IN1, 0);
-  analogWrite(LEFT_IN0,  0);
-  analogWrite(LEFT_IN1,  0);
+  for(int i = 0;i < 6;i++) {
+    pinMode(2+i, INPUT);
+  }
+  for(int i = 0;i < 6;i++) {
+    pinMode(8+i, OUTPUT);
+  }
+   
   return RTC_OK; 
 }
 
@@ -109,7 +107,7 @@ int RTno::onActivated() {
 }
 
 /////////////////////////////////////////////
-// on_deactivated
+// on_deactfivated
 // This function is called when the RTnoRTC
 // is deactivated.
 /////////////////////////////////////////////
@@ -117,11 +115,6 @@ int RTno::onDeactivated()
 {
   // Write here finalization code.
 
-  /** Stop Vehilcle */
-  analogWrite(RIGHT_IN0, 0);
-  analogWrite(RIGHT_IN1, 0);
-  analogWrite(LEFT_IN0, 0);
-  analogWrite(LEFT_IN1, 0);
   return RTC_OK;
 }
 
@@ -133,46 +126,27 @@ int RTno::onDeactivated()
 // ERROR condition.r
 //////////////////////////////////////////////
 int RTno::onExecute() {
-
-  /* Read Input Port */
+  /*
+   * Input digital data
+   */
+   
   if(in0In.isNew()) {
-    digitalWrite(LED, HIGH); // LED on
     in0In.read();
-
-    if(in0.data.length() >= 2) { // if data is avairable
-      long forward = -in0.data[1]; // [-1000, +1000]
-      long turn    = -in0.data[0]; // [-1000, +1000]
-      
-      // calculate motor turn velocity
-      long right = (forward + turn) / 10; // [-2000, +2000]
-      long left  = (forward - turn) / 10; // [-2000, +2000]
-      
-      // set PWM duty rate 
-      if(right > STOP_BAND) {
-        analogWrite(RIGHT_IN0, right +25);
-        analogWrite(RIGHT_IN1, 0);
-      } else if(right < -STOP_BAND) {
-        analogWrite(RIGHT_IN1, -right +25);
-        analogWrite(RIGHT_IN0, 0);
-      } else {
-        analogWrite(RIGHT_IN0, 0);
-        analogWrite(RIGHT_IN1, 0);
-      }
-
-      if(left > STOP_BAND) {
-        analogWrite(LEFT_IN0, left +25);
-        analogWrite(LEFT_IN1, 0);
-      } else if(left < -STOP_BAND) {
-        analogWrite(LEFT_IN1, -left +25);
-        analogWrite(LEFT_IN0, 0);
-      } else {
-        analogWrite(LEFT_IN0, 0);
-        analogWrite(LEFT_IN1, 0);
-      }
-      
-      digitalWrite(LED, LOW); // LED off
+    for(int i = 0;i < in0.data.length() && i < 6;i++) {
+      digitalWrite(8+i, in0.data[i]);
     }
-  }   
+  }
+  
+  
+  /*
+   * Output digital data in Voltage unit.
+   */
+  out0.data.length(6);
+  for(int i = 0;i < 6;i++) {
+    out0.data[i] = digitalRead(2+i);
+  }
+  out0Out.write();
+    
   return RTC_OK; 
 }
 
@@ -186,11 +160,6 @@ int RTno::onExecute() {
 ///////////////////////////////////////
 int RTno::onError()
 {
-  /** Stop Vehilcle */
-  analogWrite(RIGHT_IN0, 0);
-  analogWrite(RIGHT_IN1, 0);
-  analogWrite(LEFT_IN0, 0);
-  analogWrite(LEFT_IN1, 0);
   return RTC_OK;
 }
 

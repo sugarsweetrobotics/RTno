@@ -35,10 +35,10 @@ void rtcconf(void) {
 }
 
 TimedFloatSeq in0;
-InPort in0In("rgb", in0);
+InPort<TimedFloatSeq> in0In("rgb", in0);
 
 TimedLongSeq out0;
-OutPort out0Out("out0", out0);
+OutPort<TimedLongSeq> out0Out("out0", out0);
 
 LCDShield lcd;
 int buttonPins[3] = {3, 4, 5};

@@ -1,5 +1,5 @@
 /**
- * RTnoArm.pde
+ * analogIn.ino
  * RTno is RT-middleware and arduino.
  *
  * Using RTno, arduino device can communicate any RT-components 
@@ -19,52 +19,39 @@
  *  int onReset(void);
  * These functions are spontaneously called by the RTno-proxy
  *  RT-component which is launched in the PC.
- * @author Yuki Suga
- * This code is written/distributed for public-domain.
  */
 
 #include <RTno.h>
-#include <Servo.h>
+
 /**
  * This function is called at first.
  * conf._default.baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: reserved but not used.
  */
 void rtcconf(void) {
+  conf._default.connection_type = ConnectionTypeSerial1;
   conf._default.baudrate = 57600;
   exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
-
 
 /** 
  * Declaration Division:
  *
  * DataPort and Data Buffer should be placed here.
  *
- * available data types are as follows:
- * TimedLong
- * TimedDouble
- * TimedFloat
- * TimedLongSeq
- * TimedDoubleSeq
- * TimedFloatSeq
+ * Currently, following 6 types are available.
+ * TimedLong:
+ * TimedDouble:
+ * TimedFloat:
+ * TimedLongSeq:
+ * TimedDoubleSeq:
+ * TimedFloatSeq:
  *
  * Please refer following comments. If you need to use some ports,
  * uncomment the line you want to declare.
  **/
-TimedDoubleSeq in0;
-InPort in0In("pos", in0);
-
-#define JOINT_NUM 4
-/* Pin definition */
-const int joint_pin[JOINT_NUM] = {
-  9,
-  10,
-  11,
-  12
-};
-
-Servo joint[JOINT_NUM];
+TimedFloatSeq out0;
+OutPort<TimedFloatSeq> out0Out("out0", out0);
 
 //////////////////////////////////////////
 // on_initialize
@@ -78,14 +65,12 @@ Servo joint[JOINT_NUM];
 //
 //////////////////////////////////////////
 int RTno::onInitialize() {
-  /* Data Ports are added in this section. */
-  addInPort(in0In);
+  /* Data Ports are added in this section.
+  */
+  addOutPort(out0Out);
   
   // Some initialization (like port direction setting)
-  for(int i = 0;i < JOINT_NUM;i++) {
-    joint[i].attach(joint_pin[i]);
-    joint[i].write(90);
-  }
+
   return RTC_OK; 
 }
 
@@ -99,9 +84,7 @@ int RTno::onInitialize() {
 ////////////////////////////////////////////
 int RTno::onActivated() {
   // Write here initialization code.
-  for(int i = 0;i < JOINT_NUM;i++) {
-    joint[i].write(90);
-  }  
+  
   return RTC_OK; 
 }
 
@@ -113,9 +96,7 @@ int RTno::onActivated() {
 int RTno::onDeactivated()
 {
   // Write here finalization code.
-  for(int i = 0;i < JOINT_NUM;i++) {
-    joint[i].write(90);
-  }  
+
   return RTC_OK;
 }
 
@@ -127,18 +108,16 @@ int RTno::onDeactivated()
 // ERROR condition.r
 //////////////////////////////////////////////
 int RTno::onExecute() {
-  
-  /**
-   * Usage of InPort with sequence type
+
+  /*
+   * Output analog data in Voltage unit.
    */
-  if(in0In.isNew()) {
-    in0In.read();
-    for(int i = 0;i < in0.data.length();i++) {
-      double data_buffer = in0.data[i] / 3.14159 * 180 + 90;
-      joint[i].write((int)data_buffer);
-    }
+  out0.data.length(6);
+  for(int i = 0;i < 6;i++) {
+    out0.data[i] = (analogRead(i) * 5.0f) / 1024;
   }
-  
+  out0Out.write();
+    
   return RTC_OK; 
 }
 
@@ -152,9 +131,6 @@ int RTno::onExecute() {
 ///////////////////////////////////////
 int RTno::onError()
 {
-  for(int i = 0;i < JOINT_NUM;i++) {
-    joint[i].write(90);
-  }  
   return RTC_OK;
 }
 

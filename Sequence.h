@@ -26,6 +26,9 @@ class Sequence : public SequenceBase {
     //    free((void*)m_ptr); m_ptr = malloc(len * sizeof(T));
   }
 
+  unsigned char length() {
+    return SequenceBase::length();
+  }
 
   T& operator[](int index) {
     return m_ptr[index];

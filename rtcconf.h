@@ -1,6 +1,8 @@
 #ifndef RTC_CONF_HEADER_INCLUDED
 #define RTC_CONF_HEADER_INCLUDED
 
+
+#ifdef USE_ETHERNET_CONNECTION
 struct IPAddr {
   unsigned char value[4];
 
@@ -38,17 +40,19 @@ struct MacAddr {
   }
 };
 
-
+#endif
 
 struct config_str {
   struct default_str {
     unsigned char connection_type;
     unsigned short port;
 
+#ifdef USE_ETHERNET_CONNECTION
     MacAddr mac_address;
     IPAddr ip_address;
     IPAddr subnet_mask;
     IPAddr default_gateway;
+#endif
 
     long baudrate;
   }_default;
@@ -64,10 +68,16 @@ struct exec_cxt_str {
 #define ConnectionTypeSerial1 0x01
 #define ConnectionTypeSerial2 0x02
 #define ConnectionTypeSerial3 0x03
+#ifdef USE_ETHERNET_CONNECTION
 #define ConnectionTypeEtherTcp 0x04
+#endif
 
 #define ProxySynchronousExecutionContext 0x21
+
+#ifdef TIMER1_EXECUTION_CONTEXT
 #define Timer1ExecutionContext 0x22
+#endif
+
 #define Timer2ExecutionContext 0x23
 
 #endif

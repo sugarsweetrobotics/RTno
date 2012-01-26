@@ -41,7 +41,7 @@ void NullBuffer_destroy(PortBuffer* _this) {
 
 void NullBuffer_push(PortBuffer* _this, const char* data, int size) {
   struct NullBuffer_private* nullBuffer = 
-    (struct NullBuffer_private*)_this->privateData;
+    (struct NullBuffer_private*)(_this->privateData);
   if(size != nullBuffer->size) {
     free(nullBuffer->pData);
     nullBuffer->pData = (char*)malloc(size);
@@ -54,7 +54,7 @@ void NullBuffer_push(PortBuffer* _this, const char* data, int size) {
 void NullBuffer_pop(PortBuffer* _this, char* dst, int size)
 {
   struct NullBuffer_private* nullBuffer = 
-    (struct NullBuffer_private*)_this->privateData;
+    (struct NullBuffer_private*)(_this->privateData);
   if(nullBuffer->size <= size) {
     memcpy(dst, nullBuffer->pData, nullBuffer->size);
   }
@@ -62,10 +62,10 @@ void NullBuffer_pop(PortBuffer* _this, char* dst, int size)
 }
 
 int NullBuffer_getNextDataSize(PortBuffer* _this){
-  return ((struct NullBuffer_private*)_this->privateData)->size;
+  return ((struct NullBuffer_private*)(_this->privateData))->size;
 }
 
 int NullBuffer_hasNext(PortBuffer* _this) {
-  return ((struct NullBuffer_private*)_this->privateData)->isUpdated;
+  return ((struct NullBuffer_private*)(_this->privateData))->isUpdated;
 }
 

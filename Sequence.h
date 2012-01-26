@@ -8,9 +8,11 @@ class SequenceBase {
     unsigned char m_length;
 
  public:
-  unsigned char length() {
+  virtual unsigned char length() {
     return m_length;
   }
+  
+  virtual void length(unsigned char len) = 0;// {m_length=6;};
 
 };
 
@@ -21,16 +23,13 @@ class Sequence : public SequenceBase {
 
  public:
   Sequence() {m_ptr = 0;}
-  void length(unsigned char len) {
-    //delete m_ptr;
-    //m_ptr = new T[len];
-    
-    this->m_length = len;
+  virtual void length(unsigned char len) {
+    m_length = len;
     free((void*)m_ptr);
     m_ptr = (T*)malloc(len * sizeof(T));
   }
 
-  unsigned char length() {
+  virtual unsigned char length() {
     return SequenceBase::length();
   }
 
@@ -38,9 +37,9 @@ class Sequence : public SequenceBase {
     return m_ptr[index];
   }
 
-  T* operator&() {
-    return m_ptr;
-  }
+  //T* operator&() {
+  //  return m_ptr;
+  //}
 };
 
 

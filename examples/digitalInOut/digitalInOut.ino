@@ -63,7 +63,7 @@ TimedLongSeq in0;
 InPort<TimedLongSeq> in0In("in0", in0);
 
 TimedLongSeq out0;
-OutPort out0Out("out0", out0);
+OutPort<TimedLongSeq> out0Out("out0", out0);
 
 //////////////////////////////////////////
 // on_initialize

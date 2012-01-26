@@ -17,6 +17,6 @@ int TypeCode_getElementSize(const char typeCode) {
   case 'd': // double is 32 bit in arduino
     return 4;
   default:
-    return 0;
+    return 4;
   }
 }

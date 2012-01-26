@@ -26,8 +26,7 @@ class Sequence : public SequenceBase {
     //m_ptr = new T[len];
     
     this->m_length = len;
-    free((void*)m_ptr);
-    m_ptr = (T*)malloc(len * sizeof(T));
+    free((void*)m_ptr); m_ptr = (T*)malloc(len * sizeof(T));
   }
 
   unsigned char length() {

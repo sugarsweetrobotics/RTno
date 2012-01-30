@@ -10,13 +10,6 @@
 #define MACaddr(a1, a2, a3, a4, a5, a6) \
   ((((uint64_t)a6) << 40) | (((uint64_t)a5) << 32) | (((uint64_t)a4) << 24) | (((uint64_t)a3) << 16) | (((uint64_t)a2) << 8) | (((uint64_t)a1) << 0))
 
-/*
-uint8_t* MACaddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8_t a6) {
-  uint8_t* ret = (uint8_t*)malloc(sizeof(uint8_t)*6);
-  ret[0] = a1, ret[1] = a2, ret[2] = a3, ret[3] = a4, ret[4] = a5, ret[5] = a6;
-  return ret;
-}
-*/
 #endif
 
 

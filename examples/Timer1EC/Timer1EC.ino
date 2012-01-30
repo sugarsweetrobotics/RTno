@@ -38,7 +38,7 @@
  * conf._default.baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: Timer1
  */
-void rtcconf(void) {
+void rtcconf(config_str& conf, exec_cxt_str& exec_cxt) {
   conf._default.baudrate = 57600;
   conf._default.connection_type = ConnectionTypeSerial1;
   exec_cxt.periodic.type = Timer1ExecutionContext;

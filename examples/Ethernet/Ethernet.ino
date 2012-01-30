@@ -141,7 +141,7 @@ int RTno::onExecute() {
     Serial.print("ReceivedData = "); Serial.println(data, DEC);
   } 
 
-  static int count;
+  static long count;
   count++;
   if((count % 100) == 0) {
     out0.data = count;

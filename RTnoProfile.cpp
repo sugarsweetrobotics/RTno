@@ -4,8 +4,6 @@
 
 #include "RTnoProfile.h"
 
-//static uint8_t numInPort = 0;
-//static uint8_t numOutPort = 0;
 static PortBase *m_ppInPort[MAX_PORT];
 static PortBase *m_ppOutPort[MAX_PORT];
 

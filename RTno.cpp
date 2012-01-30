@@ -18,10 +18,6 @@
 using namespace RTno;
 
 // global variables
-
-//config_str conf;
-//exec_cxt_str exec_cxt;
-
 // module private variables.
 #define PRIVATE static
 
@@ -54,9 +50,6 @@ PRIVATE void _PacketHandlerOnActive();
 
 void EC_setup(exec_cxt_str& exec_cxt);
 void Connection_setup(config_str& conf);
-
-//static exec_cxt_str exec_cxt;
-//static config_str conf;
 
 /**
  * Arduino Setup Routine.
@@ -199,24 +192,6 @@ PRIVATE void _PacketHandlerOnError() {
 
   int8_t retval = EC_error();
   if(retval < 0) ret = RTNO_ERROR;
-  /**
-  if(m_pPacketBuffer[INTERFACE] == ONERROR) {
-    if(exec_cxt.periodic.type == ProxySynchronousExecutionContext) {
-      onError();
-      intface = ONERROR;
-      ret = RTNO_OK;
-    }
-  } else if(m_pPacketBuffer[INTERFACE] == RESET) {
-    intface = RESET;
-    if(onReset() == RTC_OK) {
-      m_Condition = INACTIVE;
-      ret = RTNO_OK;
-
-    } else {
-      m_Condition = ERROR;
-    }
-
-    }*/
   Transport_SendPacket(intface, 1, &ret);
 }
 
@@ -241,49 +216,23 @@ PRIVATE void _PacketHandlerOnActive() {
   int8_t retval;
   switch(m_pPacketBuffer[INTERFACE]) {
   case DEACTIVATE:
-    //    retval = m_pExecutionContext->deactivate_component();
     retval = EC_deactivate_component();
     if(retval < 0) ret = RTNO_ERROR;
-    /*
-    if(exec_cxt.periodic.type == Timer1ExecutionContext) {
-      //      m_pTimer1EC->suspend();
-    }
-    intface = DEACTIVATE;
-    onDeactivated();
-    m_Condition = INACTIVE;
-    ret = RTNO_OK;
-    */
     Transport_SendPacket(DEACTIVATE, 1, &ret);
     break;
   case EXECUTE:
-    //    retval = m_pExecutionContext->execute();
     retval = EC_execute();
     if(retval < 0) ret = RTNO_ERROR;
-    /*
-    intface = EXECUTE;
-    if(exec_cxt.periodic.type == ProxySynchronousExecutionContext) {
-      if(onExecute() == RTC_OK) {
-	ret = RTNO_OK;
-      } else {
-	m_Condition = ERROR;
-      }
-
-    }
-    */
     Transport_SendPacket(EXECUTE, 1, &ret);
     break;
   case SEND_DATA: {
-      PortBase* pInPort = RTnoProfile_getInPort(
-						(const char*)&(m_pPacketBuffer[DATA_START_ADDR+2]),
-					    m_pPacketBuffer[DATA_START_ADDR]);
+      PortBase* pInPort = RTnoProfile_getInPort((const char*)&(m_pPacketBuffer[DATA_START_ADDR+2]), m_pPacketBuffer[DATA_START_ADDR]);
       if(pInPort == NULL) {
 
       } else {
-	//	m_pExecutionContext->suspend();
 	PortBuffer* pBuffer = pInPort->pPortBuffer;
 	EC_suspend();
 	pBuffer->push(pBuffer,&(m_pPacketBuffer[DATA_START_ADDR+2+m_pPacketBuffer[DATA_START_ADDR]]), m_pPacketBuffer[DATA_START_ADDR+1]);
-	//m_pExecutionContext->resume();
 	EC_resume();
 	Transport_SendPacket(SEND_DATA, 1, &ret);
       }
@@ -292,6 +241,5 @@ PRIVATE void _PacketHandlerOnActive() {
   default:
     break;
   }
-
 }
 

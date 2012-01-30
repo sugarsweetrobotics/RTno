@@ -70,12 +70,6 @@ extern "C" {
 
 namespace RTno {
   //extern "C" {
-  // setup function is defined in RTno.cpp
-  //void setup();
-
-  // loop fuction is defined in RTno.cpp
-  //  void loop();
-
 
   // These call-back funcitons should be defined in user program code.
   // Use RTno_template.pde to create your own project.

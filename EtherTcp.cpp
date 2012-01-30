@@ -11,35 +11,6 @@ void EtherTcp_init(uint8_t* mac, uint8_t* ip,
 		   uint16_t port) 
 
 {
-  /*
-  Serial.print("MAC=");
-  Serial.print(mac[0], HEX), Serial.print(",");
-  Serial.print(mac[1], HEX), Serial.print(",");
-  Serial.print(mac[2], HEX), Serial.print(",");
-  Serial.print(mac[3], HEX), Serial.print(",");
-  Serial.print(mac[4], HEX), Serial.print(",");
-  Serial.println(mac[5], HEX);
-
-
-  Serial.print("IP=");
-  Serial.print(ip[0], DEC), Serial.print(",");
-  Serial.print(ip[1], DEC), Serial.print(",");
-  Serial.print(ip[2], DEC), Serial.print(",");
-  Serial.println(ip[3], DEC);
-
-  Serial.print("SUBNET=");
-  Serial.print(subnet[0], DEC), Serial.print(",");
-  Serial.print(subnet[1], DEC), Serial.print(",");
-  Serial.print(subnet[2], DEC), Serial.print(",");
-  Serial.println(subnet[3], DEC);
-
-  Serial.print("GATEWAY=");
-  Serial.print(gateway[0], DEC), Serial.print(",");
-  Serial.print(gateway[1], DEC), Serial.print(",");
-  Serial.print(gateway[2], DEC), Serial.print(",");
-  Serial.println(gateway[3], DEC);
-  */
-  
   Ethernet.begin(mac, ip, gateway, gateway, subnet);
   m_pServer = new EthernetServer(port);
 

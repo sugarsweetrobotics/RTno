@@ -19,11 +19,6 @@ void UART_init(unsigned char num, unsigned long baudrate)
 	  m_pSerial = &Serial;
 	  break;
 #endif
-//#if defined(UBRR1H)
-//		case 1:
-//		m_pSerial = &Serial1;
-//		break;
-//#endif
 #if defined(UBRR2H)
 		case 2:
 		m_pSerial = &Serial2;
@@ -43,13 +38,6 @@ void UART_init(unsigned char num, unsigned long baudrate)
 	SerialDevice_available = UART_available;
 	m_pSerial->begin(baudrate);
 }
-
-/*
-void UART::write(const void* data, int size)
-{
-	m_pSerial->write((const uint8_t*)data, size);
-}
-*/
 
 void UART_putc(const char c) {
   m_pSerial->write((const uint8_t*)&c, 1);

@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "Sequence.h"
+
 #pragma pack(1)
 struct TimedBoolean  {
   static const char typeCode = 'b';

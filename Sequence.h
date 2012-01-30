@@ -31,17 +31,12 @@ class Sequence : public SequenceBase {
     m_ptr = (T*)malloc(len * sizeof(T));
   }
 
-  //  virtual uint8_t length() {
-  //    return SequenceBase::length();
-  //  }
-
+  virtual uint8_t length() {
+    return SequenceBase::length();
+  }
   T& operator[](uint8_t index) {
     return m_ptr[index];
   }
-
-  //  operator int8_t() const{
-  //    return (int8_t*)m_ptr;
-  //  }
 
   virtual void* getData() { return m_ptr; }
 };

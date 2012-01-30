@@ -2,36 +2,13 @@
 #define ETHER_TCP_HEADER_INCLUDED
 
 
-
+#include <stdint.h>
 #include "SerialDevice.h"
-//#include "../SPI/SPI.h"
-//#include "../Ethernet/Ethernet.h"
 
-void EtherTcp_init(byte *mac, byte *ip, byte *gateway, byte *subnet, unsigned short port);
+void EtherTcp_init(uint8_t* mac, uint8_t *ip, uint8_t *gateway, uint8_t *subnet, uint16_t port);
 
 void EtherTcp_putc(const char c);
-unsigned char EtherTcp_available();
+uint8_t EtherTcp_available();
 char EtherTcp_getc();
-
-
-#if 0
-class EtherTcp : public SerialDevice {
- private:
-
- protected:
-  EthernetServer *m_pServer;
-  EthernetClient m_Client;
- public:
-  EtherTcp(byte *mac, byte *ip, byte *gateway, byte *subnet, unsigned short port);
-  virtual ~EtherTcp();
-
-
- public:
-  virtual void write(const void* data, int size);
-  virtual int available();
-
-  virtual int read();
-};
-#endif
 
 #endif // #ifndef ETHER_HEADER_INCLUDED

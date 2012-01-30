@@ -55,7 +55,7 @@ void UART_putc(const char c) {
   m_pSerial->write((const uint8_t*)&c, 1);
 }
 
-unsigned char UART_available()
+uint8_t UART_available()
 {
   return m_pSerial->available();
 }

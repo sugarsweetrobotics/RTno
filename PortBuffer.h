@@ -11,10 +11,10 @@ extern "C" {
 
   typedef struct _PortBuffer PortBuffer;
   struct _PortBuffer {
-    void(*push)(PortBuffer* _this, const char* data, int size);
-    void(*pop)(PortBuffer* _this, char* data, int size);
-    int(*getNextDataSize)(PortBuffer* _this);
-    int(*hasNext)(PortBuffer *_this);
+    void(*push)(PortBuffer* _this, const int8_t* data, uint8_t size);
+    void(*pop)(PortBuffer* _this, int8_t* data, uint8_t size);
+    uint8_t(*getNextDataSize)(PortBuffer* _this);
+    uint8_t(*hasNext)(PortBuffer *_this);
     void* privateData;
   };
   

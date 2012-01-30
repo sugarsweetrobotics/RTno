@@ -3,10 +3,15 @@
 
 #include "ExecutionContext.h"
 
+#ifdef __cplusplus
+//extern "C" {
+#endif
 
 void Timer1EC_init(double microsecond);
-void Timer1EC_start();
-void Timer1EC_suspend();
-void Timer1EC_resume();
+
+#ifdef __cplusplus
+//}
+#endif
+
 
 #endif

@@ -33,7 +33,7 @@
 #define USE_TIMER1_EC
 #endif
 
-
+#include <Arduino.h>
 #include "BasicDataType.h"
 #include "InPort.h"
 #include "OutPort.h"
@@ -54,17 +54,14 @@
 
 
 // global variables for rtcconf
-extern exec_cxt_str exec_cxt;
-extern  config_str conf;
+//extern volatile exec_cxt_str exec_cxt;
+//extern config_str conf;
 
 // global functions
 // RTno APIs
 extern "C" {
-  void rtcconf(void);
+  void rtcconf(config_str& conf, exec_cxt_str& exec_cxt);
 };
-
-
-
 
 extern "C" {
   void addInPort(InPortBase& inPort);
@@ -72,12 +69,12 @@ extern "C" {
 }
 
 namespace RTno {
-extern "C" {
+  //extern "C" {
   // setup function is defined in RTno.cpp
-  void setup();
+  //void setup();
 
   // loop fuction is defined in RTno.cpp
-  void loop();
+  //  void loop();
 
 
   // These call-back funcitons should be defined in user program code.
@@ -114,8 +111,8 @@ extern "C" {
    * onError
    * This function is called when RTno is error only if RTno is in RTC_ERROR condition.
    * [DANGEROUS] This function is periodically called in very short interval.
-   */
-  int onError();
+   */ 
+ int onError();
 
   /**
    * onReset
@@ -123,9 +120,9 @@ extern "C" {
    * RTno is usually reset by RT System Editor or other tools for OpenRTM-aist.
    */
   int onReset();
-  };// extern "C"
+  //};// extern "C"
 };
-//extern SerialDevice* g_pSerialDevice;
+
 
 #ifndef RTNO_SUBMODULE_DEFINE
 
@@ -133,30 +130,43 @@ extern "C" {
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-ISR(Timer1_OVF_vect)
-{
-  EC_execute();
-}
-#endif
 
-void EC_setup() {
+
+extern "C" {
+  ISR(TIMER1_OVF_vect)
+  {
+    EC_execute();
+  }
+}
+
+#endif // USE_TIMER1_EC
+
+void EC_setup(exec_cxt_str& exec_cxt) {
   switch(exec_cxt.periodic.type) {
 #ifdef USE_TIMER1_EC
   case Timer1ExecutionContext:
     Timer1EC_init(exec_cxt.periodic.rate);
     break;
-#endif
-  default:
+#endif // USE_TIMER1_EC
   case ProxySynchronousExecutionContext:
+  default:
     ProxySyncEC_init();
     break;
   }
 }
 
 
-void Connection_setup() {
-
+void Connection_setup(config_str& conf) {
   switch(conf._default.connection_type) {
+#ifdef USE_ETHERNET_CONNECTION
+  case ConnectionTypeEtherTcp:
+    EtherTcp_init((uint8_t*)&conf._default.mac_address,
+		  (uint8_t*)&conf._default.ip_address,
+		  (uint8_t*)&conf._default.default_gateway,
+		  (uint8_t*)&conf._default.subnet_mask,
+    		  conf._default.port);
+    break;
+#endif // USE_ETHERNET_CONNECTION
 #ifdef USE_UART_CONNECTION
   case ConnectionTypeSerial1:
     UART_init(1, conf._default.baudrate);
@@ -167,19 +177,13 @@ void Connection_setup() {
   case ConnectionTypeSerial3:
     UART_init(3, conf._default.baudrate);
     break;
-#endif
-#ifdef USE_ETHERNET_CONNECTION
-  case ConnectionTypeEtherTcp:
-    EtherTcp_init(conf._default.mac_address.value,
-		  conf._default.ip_address.value,
-		  conf._default.default_gateway.value,
-		  conf._default.subnet_mask.value,
-		  conf._default.port);
-#endif
+#endif // USE_UART_CONNECTION
   default:
-    return;
-  }
+    break;
 }
+}
+
+
 #endif
 
 #endif

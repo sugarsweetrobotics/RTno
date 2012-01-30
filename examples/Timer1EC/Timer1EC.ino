@@ -42,7 +42,7 @@ void rtcconf(void) {
   conf._default.baudrate = 57600;
   conf._default.connection_type = ConnectionTypeSerial1;
   exec_cxt.periodic.type = Timer1ExecutionContext;
-  exec_cxt.periodic.rate = 1; // [Hz]
+  exec_cxt.periodic.rate = 10; // [Hz]
 }
 
 
@@ -104,10 +104,10 @@ int RTno::onDeactivated()
 int RTno::onExecute() {
 
   static int i;
-  if(i == 0) {
+  i++;
+  if(i == 10) {
     digitalWrite(LED, HIGH);
-    i = 1;
-  } else {
+  } else if(i == 20) {
     digitalWrite(LED, LOW);
     i = 0;
   }

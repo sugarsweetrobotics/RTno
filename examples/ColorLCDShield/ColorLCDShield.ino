@@ -15,7 +15,13 @@
  * program memory is too small for Color LCD shield to 
  * use.)
  *
+ * OutPort: TimedLongSeq button inputs.
+ * InPort : TimedFloatSeq RGB color. (all elements are 0-1.0 value).
  *
+ * ColorLCDShield Library can be downloaded in
+ * http://github.com/ysuga/ColorLCDShield
+ * ** This library is originally developed by Jim Lindblom @ Sparkfun
+ * which is distributed under the terms of Creative commons share-alike 3.0
  * 
  */
 #include <UART.h>
@@ -30,8 +36,7 @@
 void rtcconf(void) {
   conf._default.connection_type = ConnectionTypeSerial1;
   conf._default.baudrate = 57600;
-  exec_cxt.periodic.type = Timer1ExecutionContext;
-  exec_cxt.periodic.rate = 10; // refresh rate 
+  exec_cxt.periodic.type = ProxySynchronousExecutionContext;
 }
 
 TimedFloatSeq in0;

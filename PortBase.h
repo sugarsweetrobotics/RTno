@@ -8,6 +8,7 @@
 #ifndef PORT_BASE_HEADER_INCLUDED
 #define PORT_BASE_HEADER_INCLUDED
 
+#include <stdint.h>
 #include "BasicDataType.h"
 #include "PortBuffer.h"
 
@@ -19,12 +20,13 @@ typedef struct _PortBase {
   PortBuffer *pPortBuffer;
 } PortBase;
 
-PortBase* PortBase_create(const char* name, char typeCode, void* dataBuffer);
+PortBase* PortBase_create();
+void PortBase_init(PortBase* pPortBase, const char* name, char typeCode, PortBuffer* dataBuffer);
 void PortBase_destroy(PortBase* pPortBase);
 
-unsigned char PortBase_isSequence(PortBase* pPortBase);
-unsigned char PortBase_getLength(PortBase* pPortBase);
-void PortBase_setLength(PortBase* pPortBase, int length);
+uint8_t PortBase_isSequence(PortBase* pPortBase);
+uint8_t PortBase_getLength(PortBase* pPortBase);
+void PortBase_setLength(PortBase* pPortBase, uint8_t length);
 PortBuffer* PortBase_getBuffer(PortBase* pPortBase);
 
 

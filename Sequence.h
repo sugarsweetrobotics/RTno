@@ -1,19 +1,21 @@
 #ifndef SEQUENCE_HEADER_INCLUDED
 #define SEQUENCE_HEADER_INCLUDED
 
+#include <stdint.h>
 #include <stdlib.h>
 
 class SequenceBase {
  protected:
-    unsigned char m_length;
+    uint8_t m_length;
 
  public:
-  virtual unsigned char length() {
+  virtual uint8_t length() {
     return m_length;
   }
   
-  virtual void length(unsigned char len) = 0;// {m_length=6;};
+  virtual void length(uint8_t len) {};
 
+  virtual void* getData() = 0;
 };
 
 
@@ -23,23 +25,25 @@ class Sequence : public SequenceBase {
 
  public:
   Sequence() {m_ptr = 0;}
-  virtual void length(unsigned char len) {
+  virtual void length(uint8_t len) {
     m_length = len;
     free((void*)m_ptr);
     m_ptr = (T*)malloc(len * sizeof(T));
   }
 
-  virtual unsigned char length() {
-    return SequenceBase::length();
-  }
+  //  virtual uint8_t length() {
+  //    return SequenceBase::length();
+  //  }
 
-  T& operator[](int index) {
+  T& operator[](uint8_t index) {
     return m_ptr[index];
   }
 
-  //T* operator&() {
-  //  return m_ptr;
-  //}
+  //  operator int8_t() const{
+  //    return (int8_t*)m_ptr;
+  //  }
+
+  virtual void* getData() { return m_ptr; }
 };
 
 

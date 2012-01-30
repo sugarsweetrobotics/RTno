@@ -1,17 +1,18 @@
+#include <stdint.h>
 #include <Arduino.h>
 
 #include "NullBuffer.h"
 
 struct NullBuffer_private {
-  char *pData;
-  int size;
-  int isUpdated;
+  int8_t *pData;
+  uint8_t size;
+  uint8_t isUpdated;
 };
 
-void NullBuffer_push(PortBuffer* _this, const char* data, int size);
-void NullBuffer_pop(PortBuffer* _this, char* dst, int size);
-int NullBuffer_getNextDataSize(PortBuffer* _this);
-int NullBuffer_hasNext(PortBuffer* _this);
+void NullBuffer_push(PortBuffer* _this, const int8_t* data, uint8_t size);
+void NullBuffer_pop(PortBuffer* _this, int8_t* dst, uint8_t size);
+uint8_t NullBuffer_getNextDataSize(PortBuffer* _this);
+uint8_t NullBuffer_hasNext(PortBuffer* _this);
 
 
 PortBuffer* NullBuffer_create() 
@@ -39,19 +40,19 @@ void NullBuffer_destroy(PortBuffer* _this) {
   free(_this);
 }
 
-void NullBuffer_push(PortBuffer* _this, const char* data, int size) {
+void NullBuffer_push(PortBuffer* _this, const int8_t* data, uint8_t size) {
   struct NullBuffer_private* nullBuffer = 
     (struct NullBuffer_private*)(_this->privateData);
   if(size != nullBuffer->size) {
     free(nullBuffer->pData);
-    nullBuffer->pData = (char*)malloc(size);
+    nullBuffer->pData = (int8_t*)malloc(size);
     nullBuffer->size = size;
   }
   memcpy(nullBuffer->pData, data, size);
   nullBuffer->isUpdated = 1;
 }
 
-void NullBuffer_pop(PortBuffer* _this, char* dst, int size)
+void NullBuffer_pop(PortBuffer* _this, int8_t* dst, uint8_t size)
 {
   struct NullBuffer_private* nullBuffer = 
     (struct NullBuffer_private*)(_this->privateData);
@@ -61,11 +62,11 @@ void NullBuffer_pop(PortBuffer* _this, char* dst, int size)
   nullBuffer->isUpdated = 0;
 }
 
-int NullBuffer_getNextDataSize(PortBuffer* _this){
+uint8_t NullBuffer_getNextDataSize(PortBuffer* _this){
   return ((struct NullBuffer_private*)(_this->privateData))->size;
 }
 
-int NullBuffer_hasNext(PortBuffer* _this) {
+uint8_t NullBuffer_hasNext(PortBuffer* _this) {
   return ((struct NullBuffer_private*)(_this->privateData))->isUpdated;
 }
 

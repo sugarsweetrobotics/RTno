@@ -30,7 +30,9 @@
  */
 #include <SPI.h> 
 #include <Ethernet.h>
+#include <Timer1ExecutionContext.h>
 #include <RTno.h>
+
 
 /**
  * This function is called at first.
@@ -38,15 +40,15 @@
  .baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: reserved but not used.
  */
-void rtcconf(void) {
+void rtcconf(config_str& conf, exec_cxt_str& exec_cxt) {
   conf._default.connection_type = ConnectionTypeEtherTcp;
   
   conf._default.port = 23;
-  conf._default.mac_address = MacAddr(0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED);
-  conf._default.ip_address = IPAddr(192,168,42,100);
-  conf._default.subnet_mask = IPAddr(255,255,255,0);
-  conf._default.default_gateway = IPAddr(192,168,42,254);
-  
+  conf._default.mac_address = MACaddr(0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED);
+  conf._default.ip_address = IPaddr(192,168,42,100);
+  conf._default.subnet_mask = IPaddr(255,255,255,0);
+  conf._default.default_gateway = IPaddr(192,168,42,254);
+
   exec_cxt.periodic.type = Timer1ExecutionContext;
   exec_cxt.periodic.rate = 100;
 }
@@ -94,6 +96,7 @@ int RTno::onInitialize() {
   
   Serial.begin(9600);
   Serial.println("onInitialized!!");
+  Serial.flush();
   return RTC_OK; 
 }
 
@@ -179,5 +182,4 @@ int RTno::onReset()
 {
   return RTC_OK;
 }
-
 

@@ -1,30 +1,30 @@
 #define RTNO_SUBMODULE_DEFINE
-
+#include <stdint.h>
 #include <Arduino.h>
 
 #include "Transport.h"
 #include "Packet.h"
 
-int Transport_init()
+int8_t Transport_init()
 {
 
 }
 
 
-int Transport_SendPacket(const char interface, const char data_length, const char* packet_data) {
-  unsigned char sum = 0;
-  unsigned char sender[4] = {'U', 'A', 'R', 'T'};
+int8_t Transport_SendPacket(const char interface, const uint8_t data_length, const int8_t* packet_data) {
+  uint8_t sum = 0;
+  uint8_t sender[4] = {'U', 'A', 'R', 'T'};
   SerialDevice_putc(interface);
   sum += interface;
   SerialDevice_putc(data_length);
   sum += data_length;
 
-  for(int i = 0;i < 4;i++) {
+  for(uint8_t i = 0;i < 4;i++) {
     sum += sender[i];
     SerialDevice_putc(sender[i]);
   }
 
-  for(int i = 0;i < data_length;i++) {
+  for(uint8_t i = 0;i < data_length;i++) {
     sum += packet_data[i];
     SerialDevice_putc(packet_data[i]);
   }
@@ -32,9 +32,9 @@ int Transport_SendPacket(const char interface, const char data_length, const cha
   return PACKET_HEADER_SIZE + data_length + 1;
 }
 
-int Transport_ReceivePacket(unsigned char* packet) {
-  int counter = 0;
-  unsigned char sum = 0;
+int8_t Transport_ReceivePacket(int8_t* packet) {
+  uint8_t counter = 0;
+  uint8_t sum = 0;
 
   if(SerialDevice_available() == 0) {
     return 0;
@@ -60,12 +60,12 @@ int Transport_ReceivePacket(unsigned char* packet) {
       return -TIMEOUT;
     }
   }
-  for(int i = 0;i < 4;i++) {
-    unsigned char val = SerialDevice_getc();
+  for(uint8_t i = 0;i < 4;i++) {
+    uint8_t val = SerialDevice_getc();
     sum += val;
   }
 
-  for(int i = 0;i < packet[DATA_LENGTH];i++) {
+  for(uint8_t i = 0;i < packet[DATA_LENGTH];i++) {
     counter = 0;
     while(SerialDevice_available() == 0) {
       delayMicroseconds(PACKET_WAITING_DELAY);
@@ -81,7 +81,7 @@ int Transport_ReceivePacket(unsigned char* packet) {
   while(SerialDevice_available() == 0) {
     ;
   }
-  unsigned char checksum = SerialDevice_getc();
+  uint8_t checksum = SerialDevice_getc();
   
   if(sum != checksum) {
     return -CHECKSUM_ERROR;

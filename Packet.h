@@ -83,5 +83,4 @@ enum {
 #define TYPECODE_TIMED_FLOAT_SEQ 'F'
 #define TYPECODE_TIMED_DOUBLE_SEQ 'D'
 
-#define MAX_PACKET_SIZE 128
 #endif

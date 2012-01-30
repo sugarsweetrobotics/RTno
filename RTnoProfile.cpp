@@ -4,8 +4,8 @@
 
 #include "RTnoProfile.h"
 
-static int numInPort = 0;
-static int numOutPort = 0;
+//static uint8_t numInPort = 0;
+//static uint8_t numOutPort = 0;
 static PortBase *m_ppInPort[MAX_PORT];
 static PortBase *m_ppOutPort[MAX_PORT];
 
@@ -15,33 +15,45 @@ void RTnoProfile_init()
 
 int RTnoProfile_addInPort(PortBase* port) 
 {
-  if(numInPort == 8) return -1;
-  m_ppInPort[numInPort] = port;	
-  numInPort++;
-  return numInPort;
+  int index = RTnoProfile_getNumInPort();
+  if(index == MAX_PORT) return -1;
+  m_ppInPort[index] = port;
+  return index;
 }
 
 
 int RTnoProfile_addOutPort(PortBase* port) 
 {
-  if(numOutPort == 8) return -1;
-  m_ppOutPort[numOutPort] = port;
-  numOutPort++;
-  return numOutPort;
+  int index = RTnoProfile_getNumOutPort();
+  if(index == MAX_PORT) return -1;
+  m_ppOutPort[index] = port;
+  return index;
 }
 
 int RTnoProfile_getNumInPort() {
-  return numInPort;
+  for(int i = 0;i < MAX_PORT;i++) {
+    if(m_ppInPort[i] == NULL) {
+      return i;
+    }
+  }
+  return MAX_PORT;
 }
 
 
 int RTnoProfile_getNumOutPort() {
-  return numOutPort;
+  for(int i = 0;i < MAX_PORT;i++) {
+    if(m_ppOutPort[i] == NULL) {
+      return i;
+    }
+  }
+  return MAX_PORT;
+
 }
 
-PortBase* RTnoProfile_getInPort(const char* name, int nameLen)
+PortBase* RTnoProfile_getInPort(const char* name, uint8_t nameLen)
 {
-  for(int i = 0;i < numInPort;i++) {
+  for(uint8_t i = 0;i < MAX_PORT;i++) {
+    if(m_ppInPort[i] == NULL) return NULL;
     if(strncmp(name, m_ppInPort[i]->pName, nameLen) == 0) {
       return m_ppInPort[i];
     }
@@ -50,9 +62,10 @@ PortBase* RTnoProfile_getInPort(const char* name, int nameLen)
 }
 
 
-PortBase* RTnoProfile_getOutPort(const char* name, int nameLen)
+PortBase* RTnoProfile_getOutPort(const char* name, uint8_t nameLen)
 {
-  for(int i = 0;i < numOutPort;i++) {
+  for(uint8_t i = 0;i < MAX_PORT;i++) {
+    if(m_ppOutPort[i] == NULL) return NULL;
     if(strncmp(name, m_ppOutPort[i]->pName, nameLen) == 0) {
       return m_ppOutPort[i];
     }
@@ -60,12 +73,12 @@ PortBase* RTnoProfile_getOutPort(const char* name, int nameLen)
   return NULL;
 }
 
-PortBase* RTnoProfile_getInPortByIndex(const int i)
+PortBase* RTnoProfile_getInPortByIndex(const uint8_t i)
 {
   return m_ppInPort[i];
 }
 
-PortBase* RTnoProfile_getOutPortByIndex(const int i)
+PortBase* RTnoProfile_getOutPortByIndex(const uint8_t i)
 {
   return m_ppOutPort[i];
 }

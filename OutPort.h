@@ -8,6 +8,7 @@
  * @license LGPLv3
  *****************************************/
 
+#include <stdint.h>
 #include "PortBase.h"
 #include "PortBuffer.h"
 #include "NullBuffer.h"
@@ -19,11 +20,8 @@ class OutPortBase : public PortBase {
  private:
 
  public:
-  OutPortBase(const char* name) {
-    pName = (char*)malloc(strlen(name)+1);
-    strcpy(pName, name);
-    typeCode = 0;
-    pPortBuffer = NullBuffer_create();
+  OutPortBase(const char* name, char tCode) {
+    PortBase_init(this, name, tCode, NullBuffer_create());
   }
 
  public:
@@ -36,19 +34,22 @@ class OutPort : public OutPortBase {
   T* m_pData;
   
  public:
- OutPort(const char* name, T& data) : OutPortBase(name) {
+ OutPort(const char* name, T& data) : OutPortBase(name, data.typeCode) {
     m_pData = &data;
-    typeCode = data.typeCode;
   }
   ~OutPort() {}
 
  public:
-  int write() {
-    int size = TypeCode_getElementSize(m_pData->typeCode);
+  uint8_t write() {
+    uint8_t size = TypeCode_getElementSize(m_pData->typeCode);
     if(TypeCode_isSequence(m_pData->typeCode)) {
       size *= ((SequenceBase*)&(m_pData->data))->length();
+      pPortBuffer->push(pPortBuffer,
+			(int8_t*)((SequenceBase*)&(m_pData->data))->getData(),
+			size);
+    } else {
+      pPortBuffer->push(pPortBuffer, (const int8_t*)&(m_pData->data), size);
     }
-    pPortBuffer->push(pPortBuffer, (const char*)&(m_pData->data[0]), size);
     return size;
   }
 };

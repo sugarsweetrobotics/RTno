@@ -6,23 +6,54 @@
 static EthernetServer *m_pServer;
 static EthernetClient *m_pClient;
 
-void EtherTcp_init(byte* mac, byte* ip, 
-		   byte* gateway, byte* subnet, 
-		   unsigned short port) 
+void EtherTcp_init(uint8_t* mac, uint8_t* ip, 
+		   uint8_t* gateway, uint8_t* subnet,
+		   uint16_t port) 
+
 {
-  unsigned char dns[] = {192,168,42,254};
-  Ethernet.begin(mac, ip, dns, gateway, subnet);
+  /*
+  Serial.print("MAC=");
+  Serial.print(mac[0], HEX), Serial.print(",");
+  Serial.print(mac[1], HEX), Serial.print(",");
+  Serial.print(mac[2], HEX), Serial.print(",");
+  Serial.print(mac[3], HEX), Serial.print(",");
+  Serial.print(mac[4], HEX), Serial.print(",");
+  Serial.println(mac[5], HEX);
+
+
+  Serial.print("IP=");
+  Serial.print(ip[0], DEC), Serial.print(",");
+  Serial.print(ip[1], DEC), Serial.print(",");
+  Serial.print(ip[2], DEC), Serial.print(",");
+  Serial.println(ip[3], DEC);
+
+  Serial.print("SUBNET=");
+  Serial.print(subnet[0], DEC), Serial.print(",");
+  Serial.print(subnet[1], DEC), Serial.print(",");
+  Serial.print(subnet[2], DEC), Serial.print(",");
+  Serial.println(subnet[3], DEC);
+
+  Serial.print("GATEWAY=");
+  Serial.print(gateway[0], DEC), Serial.print(",");
+  Serial.print(gateway[1], DEC), Serial.print(",");
+  Serial.print(gateway[2], DEC), Serial.print(",");
+  Serial.println(gateway[3], DEC);
+  */
+  
+  Ethernet.begin(mac, ip, gateway, gateway, subnet);
   m_pServer = new EthernetServer(port);
-  m_pServer->begin();
-  m_pClient = new EthernetClient();
-  *m_pClient = m_pServer->available();
 
   SerialDevice_available = EtherTcp_available;
   SerialDevice_getc = EtherTcp_getc;
   SerialDevice_putc = EtherTcp_putc;
+
+  m_pServer->begin();
+  m_pClient = new EthernetClient();
+  *m_pClient = m_pServer->available();
+ 
 }
 
-unsigned char EtherTcp_available()
+uint8_t EtherTcp_available()
 {
   if(*m_pClient) {
     return m_pClient->available();
@@ -39,13 +70,6 @@ unsigned char EtherTcp_available()
 void EtherTcp_putc(const char c) {
   m_pServer->write(c);
 }
-/*
-d EtherTcp::write(const void* data, int size)
-{
-  for(int i = 0;i < size;i++) {
-    m_pServer->write(*(((const unsigned char*)data)+i));
-  }
-  }*/
 
 char EtherTcp_getc()
 {

@@ -8,6 +8,7 @@
 #ifndef BASIC_DATA_TYPE_HEADER_INCLUDED
 #define BASIC_DATA_TYPE_HEADER_INCLUDED
 
+#include <stdint.h>
 #include "Sequence.h"
 #pragma pack(1)
 struct TimedBoolean  {
@@ -15,21 +16,25 @@ struct TimedBoolean  {
   char data;
 };
 
-
 struct TimedChar {
   static const char typeCode = 'c';
   char data;
 };
 
-
 struct TimedOctet {
   static const char typeCode = 'o';
-  char data;
+  int8_t data;
+};
+
+struct TimedShort {
+  static const char typeCode = 's';
+  int16_t data;
+
 };
 
 struct TimedLong {
   static const char typeCode = 'l';
-  long data;
+  int32_t data;
 };
 
 struct TimedDouble {
@@ -37,7 +42,7 @@ struct TimedDouble {
   double data;
 };
 
-class TimedFloat {
+struct TimedFloat {
   static const char typeCode = 'f';
   float data;
 };
@@ -45,7 +50,7 @@ class TimedFloat {
 
 struct TimedOctetSeq {
   static const char typeCode = 'O';
-  Sequence<char> data;
+  Sequence<int8_t> data;
 };
 
 struct TimedCharSeq {
@@ -58,9 +63,14 @@ struct TimedBooleanSeq {
   Sequence<char> data;
 };
 
+struct TimedShortSeq {
+  static const char typeCode = 'S';
+  Sequence<int16_t> data;
+};
+
 struct TimedLongSeq {
   static const char typeCode = 'L';
-  Sequence<long> data;
+  Sequence<int32_t> data;
 };
 
 struct TimedFloatSeq {

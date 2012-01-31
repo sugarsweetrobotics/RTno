@@ -51,7 +51,7 @@
  * conf._default.baudrate: baudrate of serial communication
  * exec_cxt.periodic.type: reserved but not used.
  */
-void rtcconf(void) {
+void rtcconf(config_str& conf, exec_cxt_str& exec_cxt) {
   conf._default.connection_type = ConnectionTypeSerial1;
   // conf._default.connection_type = ConnectionTypeSerial2; // This configuration is avaiable in Arduino-Mega
   // conf._default.connection_type = ConnectionTypeSerial3; // This configuration is avaiable in Arduino-Mega

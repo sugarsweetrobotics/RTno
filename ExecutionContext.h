@@ -11,6 +11,7 @@ extern "C" {
   LifeCycleState EC_get_component_state();
   ReturnValue_t EC_activate_component();
   ReturnValue_t EC_deactivate_component();
+  ReturnValue_t EC_reset_component();
   ReturnValue_t EC_execute();
   ReturnValue_t EC_error();
   int8_t EC_get_type();

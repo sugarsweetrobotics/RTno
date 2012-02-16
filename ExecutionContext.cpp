@@ -64,6 +64,17 @@ ReturnValue_t EC_execute() {
   }
 }
 
+ReturnValue_t EC_reset_component() {
+  if(m_Condition != RTC_STATE_ERROR) {
+    return RTC_PRECONDITION_NOT_MET;
+  }
+  if(RTno::onReset() == RTC_OK) {
+    m_Condition = RTC_STATE_INACTIVE;
+    return RTC_OK;
+  } 
+  return RTC_ERROR;
+}
+
 ReturnValue_t EC_error() {
   if(m_Condition != RTC_STATE_ERROR) {
     return RTC_PRECONDITION_NOT_MET;

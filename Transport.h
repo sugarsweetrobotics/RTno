@@ -8,6 +8,6 @@ int8_t Transport_init();
 
 int8_t Transport_SendPacket(const char interface, const uint8_t data_length, const int8_t* packet_data);
 	
-int8_t Transport_ReceivePacket(int8_t* packet);
+int8_t Transport_ReceivePacket(int8_t* packet, char from[]);
 
 #endif

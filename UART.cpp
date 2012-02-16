@@ -33,10 +33,29 @@ void UART_init(unsigned char num, unsigned long baudrate)
 		return;
 		break;
 	}
+	SerialDevice_setTarget = UART_setTarget;
+	SerialDevice_read = UART_read;
+	SerialDevice_write = UART_write;
 	SerialDevice_putc = UART_putc;
 	SerialDevice_getc = UART_getc;
 	SerialDevice_available = UART_available;
 	m_pSerial->begin(baudrate);
+}
+
+void UART_setTarget(const char* address) {
+  // Do nothing
+}
+
+void UART_write(const int8_t* src, const uint8_t size)
+{
+  m_pSerial->write((const uint8_t*)src, size);
+}
+
+uint8_t UART_read(int8_t* dst, const uint8_t size) {
+  for(int i = 0;i < size;i++) {
+    dst[i] = UART_getc();
+  }
+  return size;
 }
 
 void UART_putc(const char c) {

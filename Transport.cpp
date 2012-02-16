@@ -5,23 +5,25 @@
 #include "Transport.h"
 #include "Packet.h"
 
+char m_SenderInfo[4];
+
 int8_t Transport_init()
 {
 
 }
 
-
 int8_t Transport_SendPacket(const char interface, const uint8_t data_length, const int8_t* packet_data) {
   uint8_t sum = 0;
-  uint8_t sender[4] = {'U', 'A', 'R', 'T'};
+  
+  //  uint8_t sender[4] = {'U', 'A', 'R', 'T'};
   SerialDevice_putc(interface);
   sum += interface;
   SerialDevice_putc(data_length);
   sum += data_length;
 
   for(uint8_t i = 0;i < 4;i++) {
-    sum += sender[i];
-    SerialDevice_putc(sender[i]);
+    sum += m_SenderInfo[i];
+    SerialDevice_putc(m_SenderInfo[i]);
   }
 
   for(uint8_t i = 0;i < data_length;i++) {
@@ -32,7 +34,7 @@ int8_t Transport_SendPacket(const char interface, const uint8_t data_length, con
   return PACKET_HEADER_SIZE + data_length + 1;
 }
 
-int8_t Transport_ReceivePacket(int8_t* packet) {
+int8_t Transport_ReceivePacket(int8_t* packet, char from[]) {
   uint8_t counter = 0;
   uint8_t sum = 0;
 
@@ -61,8 +63,8 @@ int8_t Transport_ReceivePacket(int8_t* packet) {
     }
   }
   for(uint8_t i = 0;i < 4;i++) {
-    uint8_t val = SerialDevice_getc();
-    sum += val;
+    from[i] = SerialDevice_getc();
+    sum += from[i];
   }
 
   for(uint8_t i = 0;i < packet[DATA_LENGTH];i++) {
@@ -78,8 +80,13 @@ int8_t Transport_ReceivePacket(int8_t* packet) {
     sum += packet[PACKET_HEADER_SIZE+i];
   }
   
+  counter = 0;
   while(SerialDevice_available() == 0) {
-    ;
+    delayMicroseconds(PACKET_WAITING_DELAY);
+    counter++;
+    if(counter == PACKET_WAITING_COUNT) {
+      return -DATA_TIMEOUT;
+    }
   }
   uint8_t checksum = SerialDevice_getc();
   

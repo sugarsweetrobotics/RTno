@@ -13,6 +13,7 @@ extern "C" {
   struct _PortBuffer {
     void(*push)(PortBuffer* _this, const int8_t* data, uint8_t size);
     void(*pop)(PortBuffer* _this, int8_t* data, uint8_t size);
+    int8_t*(*get)(PortBuffer* _this);
     uint8_t(*getNextDataSize)(PortBuffer* _this);
     uint8_t(*hasNext)(PortBuffer *_this);
     void* privateData;

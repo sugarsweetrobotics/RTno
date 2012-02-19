@@ -34,11 +34,15 @@ void UART_init(unsigned char num, unsigned long baudrate)
 		break;
 	}
 	SerialDevice_setTarget = UART_setTarget;
-	SerialDevice_read = UART_read;
 	SerialDevice_write = UART_write;
+
+	SerialDevice_receive = UART_receive;
+	SerialDevice_available = UART_available;
+
+	SerialDevice_read = UART_read;
 	SerialDevice_putc = UART_putc;
 	SerialDevice_getc = UART_getc;
-	SerialDevice_available = UART_available;
+
 	m_pSerial->begin(baudrate);
 }
 
@@ -51,7 +55,14 @@ void UART_write(const int8_t* src, const uint8_t size)
   m_pSerial->write((const uint8_t*)src, size);
 }
 
+
+int8_t UART_receive() {
+  return UART_available();
+}
+
 uint8_t UART_read(int8_t* dst, const uint8_t size) {
+  while(UART_available() <= 0);
+
   for(int i = 0;i < size;i++) {
     dst[i] = UART_getc();
   }

@@ -11,6 +11,7 @@ struct NullBuffer_private {
 
 void NullBuffer_push(PortBuffer* _this, const int8_t* data, uint8_t size);
 void NullBuffer_pop(PortBuffer* _this, int8_t* dst, uint8_t size);
+int8_t* NullBuffer_get(PortBuffer* _this);
 uint8_t NullBuffer_getNextDataSize(PortBuffer* _this);
 uint8_t NullBuffer_hasNext(PortBuffer* _this);
 
@@ -26,6 +27,7 @@ PortBuffer* NullBuffer_create()
   PortBuffer* retval = (PortBuffer*)malloc(sizeof(PortBuffer));
   retval->push = NullBuffer_push;
   retval->pop = NullBuffer_pop;
+  retval->get = NullBuffer_get;
   retval->getNextDataSize = NullBuffer_getNextDataSize;
   retval->hasNext = NullBuffer_hasNext;
   retval->privateData = (void*)privateData;
@@ -52,12 +54,21 @@ void NullBuffer_push(PortBuffer* _this, const int8_t* data, uint8_t size) {
   nullBuffer->isUpdated = 1;
 }
 
+int8_t* NullBuffer_get(PortBuffer* _this)
+{
+  struct NullBuffer_private* nullBuffer = 
+    (struct NullBuffer_private*)(_this->privateData);
+  return nullBuffer->pData;
+}
+
 void NullBuffer_pop(PortBuffer* _this, int8_t* dst, uint8_t size)
 {
   struct NullBuffer_private* nullBuffer = 
     (struct NullBuffer_private*)(_this->privateData);
-  if(nullBuffer->size <= size) {
-    memcpy(dst, nullBuffer->pData, nullBuffer->size);
+  if(dst != NULL) {
+    if(nullBuffer->size <= size) {
+      memcpy(dst, nullBuffer->pData, nullBuffer->size);
+    }
   }
   nullBuffer->isUpdated = 0;
 }

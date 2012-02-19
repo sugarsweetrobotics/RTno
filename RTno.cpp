@@ -5,15 +5,14 @@
  * @license LGPLv3
  *****************************************/
 #define RTNO_SUBMODULE_DEFINE
-#include <stdint.h>
 #include <Arduino.h>
+#include <stdint.h>
 
 #include "RTno.h"
 #include "Packet.h"
-
+#include "PacketBuffer.h"
 #include "Connection.h"
 #include "Transport.h"
-//#include "UART.h"
 #include "RTnoProfile.h"
 
 using namespace RTno;
@@ -24,8 +23,8 @@ using namespace RTno;
 
 // static value declaration.
 void(*SerialDevice_init)(const char* address);
-
 void(*SerialDevice_putc)(const char c);
+int8_t(*SerialDevice_receive)();
 uint8_t(*SerialDevice_available)();
 char(*SerialDevice_getc)();
 void(*SerialDevice_setTarget)(const char* address);
@@ -33,14 +32,15 @@ uint8_t(*SerialDevice_read)(int8_t* dst, const uint8_t maxSize);
 void(*SerialDevice_write)(const int8_t* src, const uint8_t size);
 
 
+PRIVATE char m_Address[4];
 PRIVATE char m_pFromInfo[4];
-PRIVATE int8_t m_pPacketBuffer[PACKET_BUFFER_SIZE];
-
+//PRIVATE int8_t m_pPacketBuffer[PACKET_BUFFER_SIZE];
+PRIVATE int8_t* m_pPacketBuffer;
 /*
  * Send Profile Data
  */
 PRIVATE void _SendProfile();
-PRIVATE void _SendOutPortData(PortBase* pOutPort);
+PRIVATE void _SendOutPortData(PortBase* pOutPort, uint8_t index);
 PRIVATE void _ReceiveInPortData(); 
 
 void EC_setup(exec_cxt_str& exec_cxt);
@@ -60,6 +60,10 @@ void setup() {
     EC_setup(*exec_cxt);
     Connection_setup(*conf);
     Transport_init();
+    PacketBuffer_init(128);
+    m_pPacketBuffer = PacketBuffer_getBuffer();
+    m_Address[0] = 'U', m_Address[1] = 'A', m_Address[2] = 'R', m_Address[3] = 'T';
+    PacketBuffer_setAddress((int8_t*)m_Address);
     free(exec_cxt);
     free(conf);
     EC_start();
@@ -72,35 +76,45 @@ void setup() {
  * This function is repeadedly called when arduino is turned on.
  */
 void loop() {
+
   int8_t ret;
-  ret = Transport_ReceivePacket(m_pPacketBuffer, m_pFromInfo);
+  
+  //  ret = Transport_ReceivePacket(m_pPacketBuffer, m_pFromInfo);
+  ret = Transport_ReceivePacket();
+
   if(ret < 0) { // Timeout Error or Checksum Error
-    Transport_SendPacket(PACKET_ERROR, 1, &ret);
+    PacketBuffer_clear();
+    PacketBuffer_setInterface(PACKET_ERROR);
+    PacketBuffer_push((int8_t*)&ret, 1);
+    PacketBuffer_seal();
+    Transport_SendPacket(m_pFromInfo);
   } else if (ret == 0) {
     
   } else if (ret > 0) { // Packet is successfully received
-    int8_t state = EC_get_component_state();
-    int8_t type = EC_get_type();
+    uint8_t interface_c = 0;
     int8_t retval = RTNO_OK;
-    switch(m_pPacketBuffer[INTERFACE]) {
+    int8_t state = EC_get_component_state();
+    switch(PacketBuffer_getInterface()) {
     case GET_PROFILE:
       _SendProfile();
       break;
     case GET_STATUS:
-      Transport_SendPacket(GET_STATUS, 1, &state);
+      interface_c = GET_STATUS;
+      retval = state;
       break;
     case GET_CONTEXT:
-      Transport_SendPacket(GET_CONTEXT, 1, &type);
+      interface_c = GET_CONTEXT;
+      retval = EC_get_type();
       break;
     case DEACTIVATE:
       ret = EC_deactivate_component();
       if(ret < 0) retval = RTNO_ERROR;
-      Transport_SendPacket(DEACTIVATE, 1, &retval);
+      interface_c = DEACTIVATE;
       break;
     case ACTIVATE:
       ret = EC_activate_component();
       if(ret < 0) retval = RTNO_ERROR;
-      Transport_SendPacket(ACTIVATE, 1, &retval);
+      interface_c = ACTIVATE;
       break;
     case EXECUTE:
       if(state == RTC_STATE_ACTIVE) {
@@ -109,12 +123,12 @@ void loop() {
 	ret = EC_error();
       }
       if(ret < 0) retval = RTNO_ERROR;
-      Transport_SendPacket(EXECUTE, 1, &retval);
+      interface_c = EXECUTE;
       break;
     case RESET:
       ret = EC_reset_component();
       if(ret < 0) retval = RTNO_ERROR;
-      Transport_SendPacket(RESET, 1, &retval);
+      interface_c = RESET;
       break;
     case SEND_DATA:
       if(Connection_isConnected(m_pFromInfo)) {
@@ -125,6 +139,14 @@ void loop() {
     default:
       break;
     }// switch
+
+    if(interface_c != 0) {
+      PacketBuffer_clear();
+      PacketBuffer_setInterface(interface_c);
+      PacketBuffer_push((int8_t*)&retval, 1);
+      PacketBuffer_seal();
+      Transport_SendPacket(m_pFromInfo);
+    }
   }
   
   int numOutPort = RTnoProfile_getNumOutPort();
@@ -132,7 +154,7 @@ void loop() {
     EC_suspend();
     PortBase* pOutPort = RTnoProfile_getOutPortByIndex(i);
     if(pOutPort->pPortBuffer->hasNext(pOutPort->pPortBuffer)) {
-      _SendOutPortData(pOutPort); 
+      _SendOutPortData(pOutPort, i); 
     }
     EC_resume();
   }
@@ -170,50 +192,68 @@ void addOutPort(OutPortBase& Port)
  */
 PRIVATE void _SendProfile() {
   int8_t ret = RTNO_OK;
+  char* destination = "UART";
   for(uint8_t i = 0;i < RTnoProfile_getNumInPort();i++) {
     PortBase* inPort = RTnoProfile_getInPortByIndex(i);
-    uint8_t nameLen = strlen(inPort->pName);
-    m_pPacketBuffer[0] = inPort->typeCode;
-    memcpy(&(m_pPacketBuffer[1]), inPort->pName, nameLen);
-    Transport_SendPacket(ADD_INPORT, 1+nameLen, m_pPacketBuffer);
+    PacketBuffer_clear();
+    PacketBuffer_setInterface(ADD_INPORT);
+    PacketBuffer_push((int8_t*)&(inPort->typeCode), 1);
+    PacketBuffer_push((int8_t*)inPort->pName, strlen(inPort->pName));
+    PacketBuffer_seal();
+    Transport_SendPacket((char*)destination);
   }
 
   for(uint8_t i = 0;i < RTnoProfile_getNumOutPort();i++) {
     PortBase* outPort = RTnoProfile_getOutPortByIndex(i);
-    uint8_t nameLen = strlen(outPort->pName);
-    m_pPacketBuffer[0] = outPort->typeCode;
-    memcpy(&(m_pPacketBuffer[1]), outPort->pName, nameLen);
-    Transport_SendPacket(ADD_OUTPORT, 1+nameLen, m_pPacketBuffer);
+    PacketBuffer_clear();
+    PacketBuffer_setInterface(ADD_OUTPORT);
+    PacketBuffer_push((int8_t*)&(outPort->typeCode), 1);
+    PacketBuffer_push((int8_t*)outPort->pName, strlen(outPort->pName));
+    PacketBuffer_seal();
+    Transport_SendPacket((char*)destination);
   }
 
-  Transport_SendPacket(GET_PROFILE, 1, &ret);
+  PacketBuffer_clear();
+  PacketBuffer_setInterface(GET_PROFILE);
+  PacketBuffer_push((int8_t*)&ret, 1);
+  PacketBuffer_seal();
+  Transport_SendPacket((char*)destination);
 }
 
 
-void _SendOutPortData(PortBase* pOutPort)
+void _SendOutPortData(PortBase* pOutPort, uint8_t index)
 {
-  char *name = pOutPort->pName;
+  char myAddress[4] = {'U', 'A', 'R', 'T'};
+  char *destination = "UART";
+  uint8_t nameLen = strlen(pOutPort->pName);
   uint8_t dataLen = pOutPort->pPortBuffer->getNextDataSize(pOutPort->pPortBuffer);
-  if(pOutPort == NULL) return;
-  uint8_t nameLen = strlen(name);
-  m_pPacketBuffer[0] = nameLen;
-  m_pPacketBuffer[1] = dataLen;
-  memcpy(m_pPacketBuffer + 2, name, nameLen);
-  pOutPort->pPortBuffer->pop(pOutPort->pPortBuffer, m_pPacketBuffer + 2 + nameLen, dataLen);
+  
+  PacketBuffer_clear();
+  PacketBuffer_setInterface(RECEIVE_DATA);
+  PacketBuffer_setSourcePortIndex(index);
+  PacketBuffer_push((int8_t*)&dataLen, 1);
+  PacketBuffer_push((int8_t*)(pOutPort->pPortBuffer->get(pOutPort->pPortBuffer)), dataLen);
+  PacketBuffer_seal();
+  pOutPort->pPortBuffer->pop(pOutPort->pPortBuffer, NULL, dataLen);
+
   ConnectionIterator_init(pOutPort);
+  PacketBuffer_setTargetPortIndex(0xCC);
   while(ConnectionIterator_hasNext()) {
     ConnectionIterator_next();
-    Transport_SendPacket(RECEIVE_DATA, 2 + nameLen + dataLen, m_pPacketBuffer);
+    Transport_SendPacket(destination);
   }
 }
 
 void _ReceiveInPortData() {
   int8_t ret = RTNO_OK;
-  PortBase* pInPort = RTnoProfile_getInPort((const char*)&(m_pPacketBuffer[DATA_START_ADDR+2]), m_pPacketBuffer[DATA_START_ADDR]);
+  PortBase* pInPort = RTnoProfile_getInPortByIndex(PacketBuffer_getTargetPortIndex());
   if(pInPort != NULL) {
     EC_suspend();
-    pInPort->pPortBuffer->push(pInPort->pPortBuffer,&(m_pPacketBuffer[DATA_START_ADDR+2+m_pPacketBuffer[DATA_START_ADDR]]), m_pPacketBuffer[DATA_START_ADDR+1]);
-    Transport_SendPacket(SEND_DATA, 1, &ret);
+    int8_t* pDataBuffer = PacketBuffer_getDataBuffer();
+    
+    pInPort->pPortBuffer->push(pInPort->pPortBuffer,
+			       pDataBuffer+1,
+			       pDataBuffer[0]);
     EC_resume();
   }
 }

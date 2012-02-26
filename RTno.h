@@ -9,11 +9,7 @@
  *****************************************/
 
 
-//#define BAUDRATE 19200
 
-#define RTC_OK 0
-#define RTC_ERROR -1
-#define RTC_PRECONDITION_NOT_MET -2
 
 
 #ifdef UART_HEADER_INCLUDED
@@ -34,6 +30,7 @@
 #endif
 
 #include <Arduino.h>
+#include "Packet.h"
 #include "BasicDataType.h"
 #include "InPort.h"
 #include "OutPort.h"
@@ -52,6 +49,10 @@
 
 #define MAX_PORT 8
 
+
+// Return Code
+#define RTC_OK RTNO_RTC_OK
+#define RTC_ERROR RTNO_RTC_ERROR
 
 // global variables for rtcconf
 //extern volatile exec_cxt_str exec_cxt;

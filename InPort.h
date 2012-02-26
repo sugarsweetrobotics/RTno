@@ -56,5 +56,4 @@ class InPort : public InPortBase {
 };
 
 
-
 #endif

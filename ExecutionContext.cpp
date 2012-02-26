@@ -24,64 +24,64 @@ LifeCycleState EC_get_component_state() {
 
 ReturnValue_t EC_activate_component() {
   if(m_Condition != RTC_STATE_INACTIVE) {
-    return RTC_PRECONDITION_NOT_MET;
+    return RTNO_RTC_PRECONDITION_NOT_MET;
   }
   
   if(RTno::onActivated() == RTC_OK) {
     m_Condition = RTC_STATE_ACTIVE;
-    return RTC_OK;
+    return RTNO_RTC_OK;
   }
 
   m_Condition = RTC_STATE_ERROR;
-  return RTC_ERROR;
+  return RTNO_RTC_ERROR;
 }
 
 
 ReturnValue_t EC_deactivate_component() {
   if(m_Condition != RTC_STATE_ACTIVE) {
-    return RTC_PRECONDITION_NOT_MET;
+    return RTNO_RTC_PRECONDITION_NOT_MET;
   }
   
   if(RTno::onDeactivated() == RTC_OK) {
     m_Condition = RTC_STATE_INACTIVE;
-    return RTC_OK;
+    return RTNO_RTC_OK;
   } else {
     m_Condition = RTC_STATE_ERROR;
-    return RTC_ERROR;
+    return RTNO_RTC_ERROR;
   }
 }
 
 ReturnValue_t EC_execute() {
   if(m_Condition != RTC_STATE_ACTIVE) {
-    return RTC_PRECONDITION_NOT_MET;
+    return RTNO_RTC_PRECONDITION_NOT_MET;
   }
   
-  if(RTno::onExecute() == RTC_OK) {
-    return RTC_OK;
+  if(RTno::onExecute() == RTNO_RTC_OK) {
+    return RTNO_RTC_OK;
   } else {
     m_Condition = RTC_STATE_ERROR;
-    return RTC_ERROR;
+    return RTNO_RTC_ERROR;
   }
 }
 
 ReturnValue_t EC_reset_component() {
   if(m_Condition != RTC_STATE_ERROR) {
-    return RTC_PRECONDITION_NOT_MET;
+    return RTNO_RTC_PRECONDITION_NOT_MET;
   }
-  if(RTno::onReset() == RTC_OK) {
+  if(RTno::onReset() == RTNO_RTC_OK) {
     m_Condition = RTC_STATE_INACTIVE;
-    return RTC_OK;
+    return RTNO_RTC_OK;
   } 
-  return RTC_ERROR;
+  return RTNO_RTC_ERROR;
 }
 
 ReturnValue_t EC_error() {
   if(m_Condition != RTC_STATE_ERROR) {
-    return RTC_PRECONDITION_NOT_MET;
+    return RTNO_RTC_PRECONDITION_NOT_MET;
   }
   
   RTno::onError();
-  return RTC_OK;
+  return RTNO_RTC_OK;
 }
 
 

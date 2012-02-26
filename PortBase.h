@@ -10,7 +10,11 @@
 
 #include <stdint.h>
 #include "BasicDataType.h"
+#include "Connection.h"
 #include "PortBuffer.h"
+
+
+#define INITIAL_CONNECTION_LIST_SIZE 4
 
 typedef struct _PortBase {
   unsigned char portBuffer;
@@ -18,6 +22,7 @@ typedef struct _PortBase {
   char* pName;
   char typeCode;
   PortBuffer *pPortBuffer;
+  ConnectionList* pConnectionList;
 } PortBase;
 
 PortBase* PortBase_create();

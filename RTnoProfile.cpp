@@ -73,10 +73,12 @@ PortBase* RTnoProfile_getOutPort(const char* name, uint8_t nameLen)
 
 PortBase* RTnoProfile_getInPortByIndex(const uint8_t i)
 {
+  if(i >= MAX_PORT) return NULL;
   return m_ppInPort[i];
 }
 
 PortBase* RTnoProfile_getOutPortByIndex(const uint8_t i)
 {
+  if(i >= MAX_PORT) return NULL;
   return m_ppOutPort[i];
 }

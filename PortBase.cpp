@@ -21,6 +21,7 @@ void PortBase_init(PortBase* portBase, const char* name, char typeCode, PortBuff
   strcpy(portBase->pName, name);
   portBase->typeCode = typeCode;
   portBase->pPortBuffer = dataBuffer;
+  portBase->pConnectionList = ConnectionList_create(INITIAL_CONNECTION_LIST_SIZE);
 }
 
 void PortBase_destroy(PortBase* pPortBase)

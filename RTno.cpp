@@ -42,6 +42,10 @@ PRIVATE int8_t* m_pPacketBuffer;
 PRIVATE void _SendProfile();
 PRIVATE void _SendOutPortData(PortBase* pOutPort, uint8_t index);
 PRIVATE void _ReceiveInPortData(); 
+PRIVATE int8_t _ConnectInPort();
+PRIVATE int8_t _ConnectOutPort();
+PRIVATE void _DisconnectInPort();
+PRIVATE void _DisconnectOutPort();
 
 void EC_setup(exec_cxt_str& exec_cxt);
 void Connection_setup(config_str& conf);
@@ -76,10 +80,8 @@ void setup() {
  * This function is repeadedly called when arduino is turned on.
  */
 void loop() {
-
   int8_t ret;
-  
-  //  ret = Transport_ReceivePacket(m_pPacketBuffer, m_pFromInfo);
+
   ret = Transport_ReceivePacket();
 
   if(ret < 0) { // Timeout Error or Checksum Error
@@ -91,61 +93,72 @@ void loop() {
   } else if (ret == 0) {
     
   } else if (ret > 0) { // Packet is successfully received
-    uint8_t interface_c = 0;
-    int8_t retval = RTNO_OK;
     int8_t state = EC_get_component_state();
-    switch(PacketBuffer_getInterface()) {
-    case GET_PROFILE:
-      _SendProfile();
-      break;
-    case GET_STATUS:
-      interface_c = GET_STATUS;
-      retval = state;
-      break;
-    case GET_CONTEXT:
-      interface_c = GET_CONTEXT;
-      retval = EC_get_type();
-      break;
-    case DEACTIVATE:
-      ret = EC_deactivate_component();
-      if(ret < 0) retval = RTNO_ERROR;
-      interface_c = DEACTIVATE;
-      break;
-    case ACTIVATE:
-      ret = EC_activate_component();
-      if(ret < 0) retval = RTNO_ERROR;
-      interface_c = ACTIVATE;
-      break;
-    case EXECUTE:
-      if(state == RTC_STATE_ACTIVE) {
-	ret = EC_execute();
-      } else if (state == RTC_STATE_ERROR) {
-	ret = EC_error();
+    if(PacketBuffer_getTargetPortIndex() == CONTROL_PORT_INDEX) {
+      int8_t interface_c = PacketBuffer_getInterface();
+      switch(interface_c) {
+      case CONTROL_INPORT_CONNECT:
+	if(_ConnectInPort() < 0) ret = RTNO_RTC_ERROR;
+	else ret = RTNO_RTC_OK;
+	break;
+      case CONTROL_OUTPORT_CONNECT:
+	if(_ConnectOutPort() < 0) ret = RTNO_RTC_ERROR;
+	else ret = RTNO_RTC_OK;
+	break;
+      case CONTROL_INPORT_DISCONNECT:
+	_DisconnectInPort();
+	ret = RTNO_RTC_OK;
+	break;
+      case CONTROL_OUTPORT_DISCONNECT:
+	_DisconnectOutPort();
+	ret = RTNO_RTC_OK;
+	break;
+      case CONTROL_GET_PROFILE:
+	_SendProfile();
+	ret = RTNO_RTC_OK;
+	break;
+      case CONTROL_GET_STATUS:
+	ret = state;
+	break;
+      case CONTROL_GET_CONTEXT:
+	ret = EC_get_type();
+	break;
+      case CONTROL_DEACTIVATE:
+	ret = EC_deactivate_component();
+	break;
+      case CONTROL_ACTIVATE:
+	ret = EC_activate_component();
+	break;
+      case CONTROL_EXECUTE:
+	if(state == RTC_STATE_ACTIVE) {
+	  ret = EC_execute();
+	} else if (state == RTC_STATE_ERROR) {
+	  ret = EC_error();
+	}
+	break;
+      case CONTROL_RESET:
+	ret = EC_reset_component();
+	break;
+      default:
+	ret = interface_c;
+	interface_c = UNKNOWN_INTERFACE;
+	break;
       }
-      if(ret < 0) retval = RTNO_ERROR;
-      interface_c = EXECUTE;
-      break;
-    case RESET:
-      ret = EC_reset_component();
-      if(ret < 0) retval = RTNO_ERROR;
-      interface_c = RESET;
-      break;
-    case SEND_DATA:
-      if(Connection_isConnected(m_pFromInfo)) {
-	_ReceiveInPortData();
-      }
-      break;
-
-    default:
-      break;
-    }// switch
-
-    if(interface_c != 0) {
       PacketBuffer_clear();
       PacketBuffer_setInterface(interface_c);
-      PacketBuffer_push((int8_t*)&retval, 1);
+      PacketBuffer_push((int8_t*)&ret, 1);
       PacketBuffer_seal();
       Transport_SendPacket(m_pFromInfo);
+      
+    } else {
+      switch(PacketBuffer_getInterface()) {
+      case DATAPORT_DATA:
+	_ReceiveInPortData();
+	break;
+	
+      default:
+	break;
+      }// switch
     }
   }
   
@@ -191,12 +204,12 @@ void addOutPort(OutPortBase& Port)
  * Send Profile Data
  */
 PRIVATE void _SendProfile() {
-  int8_t ret = RTNO_OK;
+  int8_t ret = RTNO_RTC_OK;
   char* destination = "UART";
   for(uint8_t i = 0;i < RTnoProfile_getNumInPort();i++) {
     PortBase* inPort = RTnoProfile_getInPortByIndex(i);
     PacketBuffer_clear();
-    PacketBuffer_setInterface(ADD_INPORT);
+    PacketBuffer_setInterface(PROFILE_INPORT);
     PacketBuffer_push((int8_t*)&(inPort->typeCode), 1);
     PacketBuffer_push((int8_t*)inPort->pName, strlen(inPort->pName));
     PacketBuffer_seal();
@@ -206,18 +219,12 @@ PRIVATE void _SendProfile() {
   for(uint8_t i = 0;i < RTnoProfile_getNumOutPort();i++) {
     PortBase* outPort = RTnoProfile_getOutPortByIndex(i);
     PacketBuffer_clear();
-    PacketBuffer_setInterface(ADD_OUTPORT);
+    PacketBuffer_setInterface(PROFILE_OUTPORT);
     PacketBuffer_push((int8_t*)&(outPort->typeCode), 1);
     PacketBuffer_push((int8_t*)outPort->pName, strlen(outPort->pName));
     PacketBuffer_seal();
     Transport_SendPacket((char*)destination);
   }
-
-  PacketBuffer_clear();
-  PacketBuffer_setInterface(GET_PROFILE);
-  PacketBuffer_push((int8_t*)&ret, 1);
-  PacketBuffer_seal();
-  Transport_SendPacket((char*)destination);
 }
 
 
@@ -229,32 +236,78 @@ void _SendOutPortData(PortBase* pOutPort, uint8_t index)
   uint8_t dataLen = pOutPort->pPortBuffer->getNextDataSize(pOutPort->pPortBuffer);
   
   PacketBuffer_clear();
-  PacketBuffer_setInterface(RECEIVE_DATA);
+  PacketBuffer_setInterface(DATAPORT_DATA);
   PacketBuffer_setSourcePortIndex(index);
-  PacketBuffer_push((int8_t*)&dataLen, 1);
   PacketBuffer_push((int8_t*)(pOutPort->pPortBuffer->get(pOutPort->pPortBuffer)), dataLen);
   PacketBuffer_seal();
   pOutPort->pPortBuffer->pop(pOutPort->pPortBuffer, NULL, dataLen);
 
-  ConnectionIterator_init(pOutPort);
-  PacketBuffer_setTargetPortIndex(0xCC);
-  while(ConnectionIterator_hasNext()) {
-    ConnectionIterator_next();
-    Transport_SendPacket(destination);
+  for(int i = 0;i < ConnectionList_size(pOutPort->pConnectionList);i++) {
+    Connection* connection = ConnectionList_item(pOutPort->pConnectionList, i);
+    PacketBuffer_setTargetPortIndex(connection->targetPort);
+    Transport_SendPacket((const char*)connection->targetAddress);
   }
+
+}
+
+
+int8_t _ConnectPort(PortBase* portBase) {
+  if(portBase == NULL) return -1;
+  int8_t* data = PacketBuffer_getDataBuffer();
+  Connection* connection= ConnectionList_search(portBase->pConnectionList, data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE));
+  if(connection == NULL) {
+    if(ConnectionList_addConnection(portBase->pConnectionList, Connection_create(data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE))) < 0) {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+int8_t _ConnectInPort() {
+  int8_t* data = PacketBuffer_getDataBuffer();
+  PortBase* pPort = RTnoProfile_getInPortByIndex(data[0]);
+  return _ConnectPort(pPort);
+}
+
+int8_t _ConnectOutPort() {
+  int8_t* data = PacketBuffer_getDataBuffer();
+  PortBase* pPort = RTnoProfile_getOutPortByIndex(data[0]);
+  return _ConnectPort(pPort);
+}
+
+
+void _DisconnectPort(PortBase* portBase) {
+  int8_t* data = PacketBuffer_getDataBuffer();
+  Connection* connection= ConnectionList_search(portBase->pConnectionList, data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE));
+  if(connection != NULL) {
+    ConnectionList_remove(portBase->pConnectionList, connection);
+  }
+}
+  
+void _DisconnectInPort() {
+  int8_t* data = PacketBuffer_getDataBuffer();
+  PortBase* pPort = RTnoProfile_getInPortByIndex(data[0]);
+  _DisconnectPort(pPort);
+}
+
+void _DisconnectOutPort() {
+  int8_t* data = PacketBuffer_getDataBuffer();
+  PortBase* pPort = RTnoProfile_getOutPortByIndex(data[0]);
+  _DisconnectPort(pPort);
 }
 
 void _ReceiveInPortData() {
-  int8_t ret = RTNO_OK;
+  int8_t ret = RTNO_RTC_OK;
   PortBase* pInPort = RTnoProfile_getInPortByIndex(PacketBuffer_getTargetPortIndex());
-  if(pInPort != NULL) {
-    EC_suspend();
-    int8_t* pDataBuffer = PacketBuffer_getDataBuffer();
-    
-    pInPort->pPortBuffer->push(pInPort->pPortBuffer,
-			       pDataBuffer+1,
-			       pDataBuffer[0]);
-    EC_resume();
+  
+  if(ConnectionList_search(pInPort->pConnectionList, PacketBuffer_getAddress(), PacketBuffer_getSourcePortIndex()) != NULL) {
+    if(pInPort != NULL) {
+      EC_suspend();
+      pInPort->pPortBuffer->push(pInPort->pPortBuffer,
+				 PacketBuffer_getDataBuffer(),
+				 PacketBuffer_getDataLength());
+      EC_resume();
+    }
   }
 }
 

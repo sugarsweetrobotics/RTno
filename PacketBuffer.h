@@ -17,12 +17,12 @@ int8_t* PacketBuffer_getAddress();
 void PacketBuffer_setTargetPortIndex(int8_t index);
 void PacketBuffer_setSourcePortIndex(int8_t index);
 
-int8_t PacketBuffer_getTargetPortIndex();
-int8_t PacketBuffer_getSourcePortIndex();
+uint8_t PacketBuffer_getTargetPortIndex();
+uint8_t PacketBuffer_getSourcePortIndex();
 
 void PacketBuffer_push(const int8_t* src, uint8_t size);
 
-uint8_t PacketBuffer_getReceivedPacketSize();
+uint8_t PacketBuffer_getDataLength();
 uint8_t PacketBuffer_getPacketSize();
 int8_t* PacketBuffer_getBuffer();
 

@@ -11,11 +11,14 @@ int8_t Transport_init()
 
 }
 
-int8_t Transport_SendPacket(const char* destination)
+int8_t Transport_SendPacket(const int8_t* destination)
 {
   uint8_t size = PacketBuffer_getPacketSize();
   int8_t* pData = PacketBuffer_getBuffer();
-  SerialDevice_write(pData, size);
+  if(SerialDevice_write(destination, pData, size) < 0) {
+    return -1;
+  } 
+  return 0;
 }
 
 
@@ -25,8 +28,8 @@ int8_t Transport_ReceivePacket()
   uint8_t sum = 0;
   PacketBuffer_clear();
   int8_t* packet = PacketBuffer_getBuffer();
-
-  if(SerialDevice_receive() <= 0) {
+  int8_t sourceInfo[4];
+  if(SerialDevice_receive(sourceInfo) <= 0) {
     return 0;
   }
 
@@ -59,5 +62,6 @@ int8_t Transport_ReceivePacket()
     return RTNO_RTC_CHECKSUM_ERROR;
   }
 
+  memcpy(&(packet[PKT_ADDR_SOURCE_ADDR]), sourceInfo, 4);
   return PKT_HEADER_SIZE + packet[PKT_ADDR_DATA_LENGTH] + 1;
 }

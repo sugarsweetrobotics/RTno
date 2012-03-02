@@ -22,24 +22,15 @@ using namespace RTno;
 #define PRIVATE static
 
 // static value declaration.
-void(*SerialDevice_init)(const char* address);
-void(*SerialDevice_putc)(const char c);
-int8_t(*SerialDevice_receive)();
+int8_t(*SerialDevice_receive)(int8_t* sourceInfo);
 uint8_t(*SerialDevice_available)();
-char(*SerialDevice_getc)();
-void(*SerialDevice_setTarget)(const char* address);
 uint8_t(*SerialDevice_read)(int8_t* dst, const uint8_t maxSize);
-void(*SerialDevice_write)(const int8_t* src, const uint8_t size);
+int8_t(*SerialDevice_write)(const int8_t* target, const int8_t* src, const uint8_t size);
 
-
-PRIVATE char m_Address[4];
-PRIVATE char m_pFromInfo[4];
-//PRIVATE int8_t m_pPacketBuffer[PACKET_BUFFER_SIZE];
-PRIVATE int8_t* m_pPacketBuffer;
 /*
  * Send Profile Data
  */
-PRIVATE void _SendProfile();
+PRIVATE int8_t _SendProfile(const int8_t* destination);
 PRIVATE void _SendOutPortData(PortBase* pOutPort, uint8_t index);
 PRIVATE void _ReceiveInPortData(); 
 PRIVATE int8_t _ConnectInPort();
@@ -65,9 +56,7 @@ void setup() {
     Connection_setup(*conf);
     Transport_init();
     PacketBuffer_init(128);
-    m_pPacketBuffer = PacketBuffer_getBuffer();
-    m_Address[0] = 'U', m_Address[1] = 'A', m_Address[2] = 'R', m_Address[3] = 'T';
-    PacketBuffer_setAddress((int8_t*)m_Address);
+    PacketBuffer_setAddress((int8_t*)"UART");
     free(exec_cxt);
     free(conf);
     EC_start();
@@ -81,19 +70,24 @@ void setup() {
  */
 void loop() {
   int8_t ret;
-
+  int8_t sourceAddress[PKT_SOURCE_ADDR_SIZE];
   ret = Transport_ReceivePacket();
-
+  memcpy(sourceAddress, PacketBuffer_getAddress(), PKT_SOURCE_ADDR_SIZE);
+  int8_t state = EC_get_component_state();
   if(ret < 0) { // Timeout Error or Checksum Error
     PacketBuffer_clear();
     PacketBuffer_setInterface(PACKET_ERROR);
+    PacketBuffer_setAddress((int8_t*)"UART");
     PacketBuffer_push((int8_t*)&ret, 1);
     PacketBuffer_seal();
-    Transport_SendPacket(m_pFromInfo);
+    Transport_SendPacket(sourceAddress);
   } else if (ret == 0) {
     
   } else if (ret > 0) { // Packet is successfully received
-    int8_t state = EC_get_component_state();
+    Serial.print("Receive OK. Interface= ");
+    Serial.print(PacketBuffer_getInterface());
+    Serial.print("\r\n");
+
     if(PacketBuffer_getTargetPortIndex() == CONTROL_PORT_INDEX) {
       int8_t interface_c = PacketBuffer_getInterface();
       switch(interface_c) {
@@ -114,7 +108,7 @@ void loop() {
 	ret = RTNO_RTC_OK;
 	break;
       case CONTROL_GET_PROFILE:
-	_SendProfile();
+	_SendProfile(sourceAddress);
 	ret = RTNO_RTC_OK;
 	break;
       case CONTROL_GET_STATUS:
@@ -146,9 +140,10 @@ void loop() {
       }
       PacketBuffer_clear();
       PacketBuffer_setInterface(interface_c);
+      PacketBuffer_setAddress((int8_t*)"UART");
       PacketBuffer_push((int8_t*)&ret, 1);
       PacketBuffer_seal();
-      Transport_SendPacket(m_pFromInfo);
+      Transport_SendPacket(sourceAddress);
       
     } else {
       switch(PacketBuffer_getInterface()) {
@@ -162,6 +157,7 @@ void loop() {
     }
   }
   
+  if(state == RTC_STATE_ACTIVE) {
   int numOutPort = RTnoProfile_getNumOutPort();
   for(int i = 0;i < numOutPort;i++) {
     EC_suspend();
@@ -170,6 +166,7 @@ void loop() {
       _SendOutPortData(pOutPort, i); 
     }
     EC_resume();
+  }
   }
   
 }
@@ -203,9 +200,9 @@ void addOutPort(OutPortBase& Port)
 /**
  * Send Profile Data
  */
-PRIVATE void _SendProfile() {
+PRIVATE int8_t _SendProfile(const int8_t* destination) {
   int8_t ret = RTNO_RTC_OK;
-  char* destination = "UART";
+  PacketBuffer_setAddress((int8_t*)"UART");
   for(uint8_t i = 0;i < RTnoProfile_getNumInPort();i++) {
     PortBase* inPort = RTnoProfile_getInPortByIndex(i);
     PacketBuffer_clear();
@@ -213,7 +210,9 @@ PRIVATE void _SendProfile() {
     PacketBuffer_push((int8_t*)&(inPort->typeCode), 1);
     PacketBuffer_push((int8_t*)inPort->pName, strlen(inPort->pName));
     PacketBuffer_seal();
-    Transport_SendPacket((char*)destination);
+    if(Transport_SendPacket(destination) < 0) {
+      return -1;
+    }
   }
 
   for(uint8_t i = 0;i < RTnoProfile_getNumOutPort();i++) {
@@ -223,8 +222,11 @@ PRIVATE void _SendProfile() {
     PacketBuffer_push((int8_t*)&(outPort->typeCode), 1);
     PacketBuffer_push((int8_t*)outPort->pName, strlen(outPort->pName));
     PacketBuffer_seal();
-    Transport_SendPacket((char*)destination);
+    if(Transport_SendPacket(destination) < 0) {
+      return -1;
+    }
   }
+  return 0;
 }
 
 
@@ -237,6 +239,7 @@ void _SendOutPortData(PortBase* pOutPort, uint8_t index)
   
   PacketBuffer_clear();
   PacketBuffer_setInterface(DATAPORT_DATA);
+
   PacketBuffer_setSourcePortIndex(index);
   PacketBuffer_push((int8_t*)(pOutPort->pPortBuffer->get(pOutPort->pPortBuffer)), dataLen);
   PacketBuffer_seal();
@@ -245,19 +248,26 @@ void _SendOutPortData(PortBase* pOutPort, uint8_t index)
   for(int i = 0;i < ConnectionList_size(pOutPort->pConnectionList);i++) {
     Connection* connection = ConnectionList_item(pOutPort->pConnectionList, i);
     PacketBuffer_setTargetPortIndex(connection->targetPort);
-    Transport_SendPacket((const char*)connection->targetAddress);
+    PacketBuffer_seal();
+    Transport_SendPacket(connection->targetAddress);
   }
-
 }
 
+static char sourceIP[] = {1, 1, 1, 1};
 
 int8_t _ConnectPort(PortBase* portBase) {
   if(portBase == NULL) return -1;
   int8_t* data = PacketBuffer_getDataBuffer();
   Connection* connection= ConnectionList_search(portBase->pConnectionList, data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE));
   if(connection == NULL) {
-    if(ConnectionList_addConnection(portBase->pConnectionList, Connection_create(data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE))) < 0) {
-      return -1;
+    if(strncmp((char*)data+1, sourceIP, PKT_SOURCE_ADDR_SIZE) == 0) {
+      if(ConnectionList_addConnection(portBase->pConnectionList, Connection_create(PacketBuffer_getAddress(), *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE))) < 0) {
+	return -1;
+      }
+    } else {
+      if(ConnectionList_addConnection(portBase->pConnectionList, Connection_create(data+1, *((uint8_t*)data+1+PKT_SOURCE_ADDR_SIZE))) < 0) {
+	return -1;
+      }
     }
   }
   return 0;

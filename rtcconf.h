@@ -55,6 +55,7 @@ struct exec_cxt_str {
 
 #ifdef USE_ETHERNET_CONNECTION
 #define ConnectionTypeEtherTcp 0x04
+#define ConnectionTypeEtherUdp 0x05
 #endif
 
 #define ProxySynchronousExecutionContext 0x21

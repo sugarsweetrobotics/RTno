@@ -6,8 +6,13 @@
 
 int8_t Transport_init();
 
-//int8_t Transport_SendPacket(const char interface, const uint8_t data_length, const int8_t* packet_data);
-int8_t Transport_SendPacket(const char* destination);	
+/**
+ * Transport Packet Data.
+ * The Packet Data is loaded from PacketBuffer module.
+ * @param destination destination address information
+ * @return zero if success. Negative if failed.
+ */
+int8_t Transport_SendPacket(const int8_t* destination);	
 int8_t Transport_ReceivePacket(int8_t* packet, char from[]);
 int8_t Transport_ReceivePacket();
 

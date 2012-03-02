@@ -42,6 +42,7 @@
 
 #ifdef USE_ETHERNET_CONNECTION
 #include "EtherTcp.h"
+#include "EtherUdp.h"
 #endif
 
 #include "ProxySyncEC.h"
@@ -156,6 +157,13 @@ void Connection_setup(config_str& conf) {
 #ifdef USE_ETHERNET_CONNECTION
   case ConnectionTypeEtherTcp:
     EtherTcp_init((uint8_t*)&conf._default.mac_address,
+		  (uint8_t*)&conf._default.ip_address,
+		  (uint8_t*)&conf._default.default_gateway,
+		  (uint8_t*)&conf._default.subnet_mask,
+    		  conf._default.port);
+    break;
+  case ConnectionTypeEtherUdp:
+    EtherUdp_init((uint8_t*)&conf._default.mac_address,
 		  (uint8_t*)&conf._default.ip_address,
 		  (uint8_t*)&conf._default.default_gateway,
 		  (uint8_t*)&conf._default.subnet_mask,

@@ -7,8 +7,5 @@
 
 void EtherTcp_init(uint8_t* mac, uint8_t *ip, uint8_t *gateway, uint8_t *subnet, uint16_t port);
 
-void EtherTcp_putc(const char c);
-uint8_t EtherTcp_available();
-char EtherTcp_getc();
 
 #endif // #ifndef ETHER_HEADER_INCLUDED

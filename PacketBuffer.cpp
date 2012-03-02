@@ -34,8 +34,6 @@ void PacketBuffer_seal() {
   m_pBuffer[PKT_ADDR_DATA_START_ADDR+m_Counter] |= sum;
 }
 
-
-
 void PacketBuffer_setInterface(int8_t interface_c) {
   m_pBuffer[PKT_ADDR_INTERFACE] = interface_c;
 }
@@ -43,7 +41,6 @@ void PacketBuffer_setInterface(int8_t interface_c) {
 int8_t PacketBuffer_getInterface() {
   return m_pBuffer[PKT_ADDR_INTERFACE];
 }
-
 
 void PacketBuffer_setAddress(int8_t* address) {
   for(unsigned int i = 0;i < 4;i++) {

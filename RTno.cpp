@@ -84,9 +84,9 @@ void loop() {
   } else if (ret == 0) {
     
   } else if (ret > 0) { // Packet is successfully received
-    Serial.print("Receive OK. Interface= ");
-    Serial.print(PacketBuffer_getInterface());
-    Serial.print("\r\n");
+    //    Serial.print("Receive OK. Interface= ");
+    //    Serial.print(PacketBuffer_getInterface());
+    //    Serial.print("\r\n");
 
     if(PacketBuffer_getTargetPortIndex() == CONTROL_PORT_INDEX) {
       int8_t interface_c = PacketBuffer_getInterface();

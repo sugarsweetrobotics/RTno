@@ -42,7 +42,7 @@ void EtherTcp_putc(const char c) {
   m_pServer->write(c);
 }
 
-char EtherTcp_getc()
+uint8_t EtherTcp_getc()
 {
   return m_pClient->read();
 }

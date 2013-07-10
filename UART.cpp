@@ -49,7 +49,7 @@ uint8_t UART_available()
 }
 
 
-char UART_getc()
+uint8_t UART_getc()
 {
   return m_pSerial->read();
 }

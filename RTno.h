@@ -16,24 +16,11 @@
 #define RTC_PRECONDITION_NOT_MET -2
 
 
-#ifdef UART_HEADER_INCLUDED
 #define USE_UART_CONNECTION
-#endif
-
-#ifdef ethernet_h
-#define USE_ETHERNET_CONNECTION
-#else
-#ifndef USE_UART_CONNECTION // for backward compatibility
-#define USE_UART_CONNECTION 
-#endif
-
-#endif
-
-#ifdef TIMER1_EXECUTION_CONTEXT
+//#define USE_ETHERNET_CONNECTION
 #define USE_TIMER1_EC
-#endif
 
-#include <Arduino.h>
+#include "Arduino.h"
 #include "BasicDataType.h"
 #include "InPort.h"
 #include "OutPort.h"
@@ -45,6 +32,11 @@
 
 #ifdef USE_ETHERNET_CONNECTION
 #include "EtherTcp.h"
+#include "EthernetInterface.h"
+#endif
+
+#ifdef USE_TIMER1_EC
+#include "Timer1ExecutionContext.h"
 #endif
 
 #include "ProxySyncEC.h"
@@ -120,20 +112,6 @@ namespace RTno {
 
 #ifndef RTNO_SUBMODULE_DEFINE
 
-#ifdef USE_TIMER1_EC
-
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
-
-extern "C" {
-  ISR(TIMER1_OVF_vect)
-  {
-    EC_execute();
-  }
-}
-
-#endif // USE_TIMER1_EC
 
 void EC_setup(exec_cxt_str& exec_cxt) {
   switch(exec_cxt.periodic.type) {
@@ -154,14 +132,17 @@ void Connection_setup(config_str& conf) {
   switch(conf._default.connection_type) {
 #ifdef USE_ETHERNET_CONNECTION
   case ConnectionTypeEtherTcp:
-    EtherTcp_init((uint8_t*)&conf._default.mac_address,
-		  (uint8_t*)&conf._default.ip_address,
-		  (uint8_t*)&conf._default.default_gateway,
-		  (uint8_t*)&conf._default.subnet_mask,
-    		  conf._default.port);
+    EtherTcp_init(//(uint8_t*)&conf._default.mac_address,
+          conf._default.ip_address,
+          conf._default.default_gateway,
+          conf._default.subnet_mask,
+              conf._default.port);
     break;
 #endif // USE_ETHERNET_CONNECTION
 #ifdef USE_UART_CONNECTION
+  case ConnectionTypeSerialUSB:
+    UART_init(0, conf._default.baudrate);
+    break;
   case ConnectionTypeSerial1:
     UART_init(1, conf._default.baudrate);
     break;
@@ -174,9 +155,19 @@ void Connection_setup(config_str& conf) {
 #endif // USE_UART_CONNECTION
   default:
     break;
-}
+  }
 }
 
+void setup();
+void loop();
+
+/*
+int main(void) {
+    setup();
+    while(1) {
+        loop();
+    }
+}*/
 
 #endif
 

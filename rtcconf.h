@@ -18,9 +18,9 @@ struct default_str {
   //#ifdef USE_ETHERNET_CONNECTION
   uint64_t mac_address;
   uint16_t port;
-  uint32_t default_gateway;
-  uint32_t ip_address;
-  uint32_t subnet_mask;
+  char* default_gateway;
+  char* ip_address;
+  char* subnet_mask;
   //#endif
 
   //#ifdef USE_UART_CONNECTION
@@ -48,6 +48,7 @@ struct exec_cxt_str {
 };
 
 #ifdef USE_UART_CONNECTION
+#define ConnectionTypeSerialUSB 0x11
 #define ConnectionTypeSerial1 0x01
 #define ConnectionTypeSerial2 0x02
 #define ConnectionTypeSerial3 0x03

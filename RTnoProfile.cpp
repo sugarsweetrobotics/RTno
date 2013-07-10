@@ -1,6 +1,6 @@
 #define RTNO_SUBMODULE_DEFINE
 
-#include <Arduino.h>
+#include "Arduino.h"
 
 #include "RTnoProfile.h"
 

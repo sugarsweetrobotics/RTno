@@ -6,7 +6,7 @@
  *****************************************/
 #define RTNO_SUBMODULE_DEFINE
 #include <stdint.h>
-#include <Arduino.h>
+#include "Arduino.h"
 
 #include "RTno.h"
 #include "Packet.h"
@@ -21,10 +21,6 @@ using namespace RTno;
 // module private variables.
 #define PRIVATE static
 
-// static value declaration.
-void(*SerialDevice_putc)(const char c);
-uint8_t(*SerialDevice_available)();
-char(*SerialDevice_getc)();
 
 PRIVATE int8_t m_pPacketBuffer[PACKET_BUFFER_SIZE];
 
@@ -71,16 +67,16 @@ void setup() {
   }
 }
 
-
 /**
  * Arduino Loop routine.
  * This function is repeadedly called when arduino is turned on.
  */
 void loop() {
   int8_t ret;
-  ret = Transport_ReceivePacket(m_pPacketBuffer);
+  uint32_t timeout = 20*1000;
+  ret = Transport_ReceivePacket((uint8_t*)m_pPacketBuffer, timeout);
   if(ret < 0) { // Timeout Error or Checksum Error
-    Transport_SendPacket(PACKET_ERROR, 1, &ret);
+    Transport_SendPacket(PACKET_ERROR, 1, (int8_t*)&ret);
   } else if (ret == 0) {
   } else if (ret > 0) { // Packet is successfully received
     if (m_pPacketBuffer[INTERFACE] == GET_PROFILE) {
@@ -94,21 +90,21 @@ void loop() {
     } else {
       switch(EC_get_component_state()) {
       case RTC_STATE_ERROR:
-	_PacketHandlerOnError();
-	break;
+        _PacketHandlerOnError();
+        break;
       case RTC_STATE_INACTIVE:
-	_PacketHandlerOnInactive();
-	break;
+        _PacketHandlerOnInactive();
+        break;
       case RTC_STATE_ACTIVE:
-	_PacketHandlerOnActive();
-	break;
+        _PacketHandlerOnActive();
+        break;
       case RTC_STATE_NONE:
-	ret = RTNO_NONE;
-	Transport_SendPacket(m_pPacketBuffer[INTERFACE], 1, &ret);
-	break;
+        ret = RTNO_NONE;
+        Transport_SendPacket(m_pPacketBuffer[INTERFACE], 1, (int8_t*)&ret);
+    break;
       default: // if m_Condition is unknown...
-	
-	break;
+    
+    break;
       }
     }
   }
@@ -212,7 +208,7 @@ PRIVATE void _PacketHandlerOnInactive() {
  */
 PRIVATE void _PacketHandlerOnActive() {
   int8_t ret = RTNO_OK;
-  char intface;
+  //char intface;
   int8_t retval;
   switch(m_pPacketBuffer[INTERFACE]) {
   case DEACTIVATE:
@@ -226,15 +222,16 @@ PRIVATE void _PacketHandlerOnActive() {
     Transport_SendPacket(EXECUTE, 1, &ret);
     break;
   case SEND_DATA: {
-      PortBase* pInPort = RTnoProfile_getInPort((const char*)&(m_pPacketBuffer[DATA_START_ADDR+2]), m_pPacketBuffer[DATA_START_ADDR]);
+      PortBase* pInPort = RTnoProfile_getInPort((char*)m_pPacketBuffer + 2 + 2, m_pPacketBuffer[2]);
       if(pInPort == NULL) {
-
+        ret = RTNO_ERROR;   
+        Transport_SendPacket(SEND_DATA, 1, &ret);
       } else {
-	PortBuffer* pBuffer = pInPort->pPortBuffer;
-	EC_suspend();
-	pBuffer->push(pBuffer,&(m_pPacketBuffer[DATA_START_ADDR+2+m_pPacketBuffer[DATA_START_ADDR]]), m_pPacketBuffer[DATA_START_ADDR+1]);
-	EC_resume();
-	Transport_SendPacket(SEND_DATA, 1, &ret);
+        PortBuffer* pBuffer = pInPort->pPortBuffer;
+        EC_suspend();
+        pBuffer->push(pBuffer,&(m_pPacketBuffer[2 + 2 + m_pPacketBuffer[2]]), m_pPacketBuffer[2+1]);
+        EC_resume();
+        Transport_SendPacket(SEND_DATA, 1, &ret);
       }
     }
     break;

@@ -49,6 +49,8 @@ enum {
 #define GET_PROFILE 'Z'
 #define GET_CONTEXT 'B'
 #define PACKET_ERROR 'F'
+#define PACKET_ERROR_CHECKSUM 'H'
+#define PACKET_ERROR_TIMEOUT 'K'
 #define RECEIVE_DATA 'V'
 
 #define ADD_INPORT 'P'

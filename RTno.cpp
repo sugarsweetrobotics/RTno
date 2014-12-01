@@ -76,8 +76,15 @@ void loop() {
   uint32_t timeout = 20*1000;
   ret = Transport_ReceivePacket((uint8_t*)m_pPacketBuffer, timeout);
   if(ret < 0) { // Timeout Error or Checksum Error
-    Transport_SendPacket(PACKET_ERROR, 1, (int8_t*)&ret);
+    if(ret == -CHECKSUM_ERROR) {
+		 Transport_SendPacket(PACKET_ERROR_CHECKSUM, 1, (int8_t*)&ret);
+	} else if(ret == -TIMEOUT) {
+		 Transport_SendPacket(PACKET_ERROR_TIMEOUT, 1, (int8_t*)&ret);
+	}else {
+    	Transport_SendPacket(PACKET_ERROR, 1, (int8_t*)&ret);
+    }
   } else if (ret == 0) {
+
   } else if (ret > 0) { // Packet is successfully received
     if (m_pPacketBuffer[INTERFACE] == GET_PROFILE) {
       _SendProfile();

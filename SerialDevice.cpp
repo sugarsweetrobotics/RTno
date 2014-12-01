@@ -10,8 +10,8 @@ int32_t INFINITE = -1;
 
 int8_t SerialDevice_read(uint8_t* buffer, const uint8_t size, const uint32_t &wait_usec)
 {
-  uint32_t start_time = micros();
   for(unsigned int i = 0;i < size;i++) {
+    uint32_t start_time = micros();
     while (1) {
       if(SerialDevice_available() > 0) {
         break;

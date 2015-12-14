@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "EtherTcp.h"
-#include <../SPI/SPI.h>
-#include <../Ethernet/Ethernet.h>
+#include <SPI.h>
+#include <Ethernet.h>
 
 static EthernetServer *m_pServer;
 static EthernetClient *m_pClient;

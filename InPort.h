@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "PortBase.h"
 #include "NullBuffer.h"
+#include "TypeCode.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -18,7 +19,7 @@ class InPortBase : public PortBase{
  private:
 
  public:
-  InPortBase(char* name, char tCode) {
+  InPortBase(const char* name, char tCode) {
     PortBase_init(this, name, tCode, NullBuffer_create());
   }
 
@@ -31,7 +32,7 @@ class InPort : public InPortBase {
  public:
   T* m_pData;
  public:
- InPort(char* name, T& data) : InPortBase(name, data.typeCode) {
+ InPort(const char* name, T& data) : InPortBase(name, data.typeCode) {
     m_pData = &data;
   }
 
